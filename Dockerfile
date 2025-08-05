@@ -41,6 +41,9 @@ COPY package.json package-lock.json ./
 # Install only production dependencies for runtime
 RUN npm ci --only=production && npm cache clean --force
 
+# Create uploads directory with proper permissions
+RUN mkdir -p /app/uploads && chown -R nextjs:nodejs /app/uploads
+
 # Copy the built application
 COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
 

@@ -2,11 +2,22 @@ import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
 import path from "path";
+import fs from "fs";
 import { validateEnvironment } from "./env-validation";
 import { registerRoutes } from "./routes";
 
 // Validate environment security before starting
 validateEnvironment();
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  try {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  } catch (error) {
+    console.warn('Could not create uploads directory:', error);
+  }
+}
 
 const app = express();
 app.use(express.json());
