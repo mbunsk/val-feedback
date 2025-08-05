@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, CheckCircle, Star } from "lucide-react";
+import { Menu, X, CheckCircle, Star, LogOut } from "lucide-react";
 import validatorIcon from "@assets/Validator AI Icon_1754233923589.png";
 import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [location, setLocation] = useLocation();
+  const { user, signOut } = useAuth();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -25,6 +27,18 @@ export default function Header() {
       setLocation('/');
     }
     setIsMobileMenuOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // Redirect to logout route to clear any server-side cookies
+      window.location.href = '/logout';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Fallback to direct logout route
+      window.location.href = '/logout';
+    }
   };
 
   return (
@@ -103,6 +117,15 @@ export default function Header() {
               >
                 💡 About
               </a>
+              {user && (
+                <button 
+                  onClick={handleLogout}
+                  className="text-foreground/80 hover:text-red-500 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 hover:bg-red-500/10 hover:scale-105 flex items-center space-x-1"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              )}
             </div>
           </nav>
           
@@ -146,6 +169,15 @@ export default function Header() {
             >
               About
             </a>
+            {user && (
+              <button 
+                onClick={handleLogout}
+                className="text-gray-700 hover:text-red-500 block px-3 py-2 rounded-md text-base font-medium w-full text-left flex items-center space-x-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
+            )}
           </div>
         </div>
       )}

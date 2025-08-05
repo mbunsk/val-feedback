@@ -173,7 +173,7 @@ function AdminDashboard() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Unique Platforms</p>
                   <p className="text-2xl font-bold">
-                    {new Set(submissions?.map(s => s.platform) || []).size}
+                    {submissions?.length || 0}
                   </p>
                 </div>
                 <Globe className="w-8 h-8 text-accent" />
@@ -205,8 +205,8 @@ function AdminDashboard() {
                             <h3 className="text-lg font-semibold text-primary">
                               {submission.projectName}
                             </h3>
-                            <Badge className={`${getPlatformBadgeColor(submission.platform)} text-white`}>
-                              {submission.platform}
+                            <Badge className="bg-primary text-white">
+                              Submission
                             </Badge>
                           </div>
                           

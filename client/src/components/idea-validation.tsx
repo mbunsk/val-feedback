@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Loader2, Lightbulb, Target, Users, Zap } from "lucide-react";
+import { CheckCircle, Loader2, Lightbulb, Target, Users, Zap, LogIn } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import SaveResults from "@/components/save-results";
 
 interface ValidationResponse {
@@ -33,14 +34,43 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
   const [targetCustomer, setTargetCustomer] = useState("");
   const [problemSolved, setProblemSolved] = useState("");
   const [validationResult, setValidationResult] = useState<ValidationResponse | null>(null);
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
   const { toast } = useToast();
+  const { user, signIn, loading: authLoading, pendingValidation, clearPendingValidation } = useAuth();
+  const hasAutoSubmitted = useRef(false);
+
+  // Beehiiv newsletter signup function
+  const subscribeToNewsletter = async (email: string, firstName: string, lastName: string) => {
+    try {
+      const response = await fetch('https://napkin.com/temp/form-submit/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: firstName + ' ' + lastName, email: email }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        console.log('Successfully subscribed to newsletter:', data);
+        return { success: true, data };
+      } else {
+        console.error('Newsletter subscription failed:', data);
+        return { success: false, error: data };
+      }
+    } catch (error) {
+      console.error('Newsletter subscription network error:', error);
+      return { success: false, error };
+    }
+  };
 
   const validateMutation = useMutation({
     mutationFn: async (data: { idea: string; targetCustomer: string; problemSolved: string }) => {
+      console.log('validateMutation called with data:', data);
       const response = await apiRequest("POST", "/api/validate", data);
+      console.log('Validation response received');
       return response.json() as Promise<ValidationResponse>;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       setValidationResult(data);
       
       // Pass validation data to parent component
@@ -52,11 +82,67 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
           feedback: data.feedback
         });
       }
+
+      // Auto-subscribe user to newsletter if they have email
+      if (user?.email && !newsletterSubscribed) {
+        try {
+          let firstName = '';
+          let lastName = '';
+          
+          if (user?.user_metadata?.full_name) {
+            const nameParts = user.user_metadata.full_name.split(' ');
+            firstName = nameParts[0] || '';
+            lastName = nameParts.slice(1).join(' ') || '';
+          } else {
+            // Fallback: use email prefix as first name
+            firstName = user.email.split('@')[0] || '';
+            lastName = '';
+          }
+          
+          const result = await subscribeToNewsletter(user.email, firstName, lastName);
+          
+          if (result.success) {
+            setNewsletterSubscribed(true);
+            /*toast({
+              title: "Newsletter Subscription",
+              description: "You've been subscribed to our startup insights newsletter! 📧",
+            });*/
+          } else {
+            console.warn('Newsletter subscription failed:', result.error);
+            // Don't show error toast to user as this is a background process
+          }
+        } catch (error) {
+          console.error('Newsletter subscription error:', error);
+        }
+      }
       
       setTimeout(() => {
         const element = document.getElementById('validation-response');
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Add focus to make it more prominent
+          element.focus();
+          // Add a more prominent highlight effect for auto-submitted validations
+          if (hasAutoSubmitted.current) {
+            element.style.outline = '3px solid #3b82f6';
+            element.style.outlineOffset = '6px';
+            element.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.3)';
+            // Remove the highlight after 5 seconds for auto-submitted validations
+            setTimeout(() => {
+              element.style.outline = '';
+              element.style.outlineOffset = '';
+              element.style.boxShadow = '';
+            }, 5000);
+          } else {
+            // Regular highlight for manual submissions
+            element.style.outline = '2px solid #3b82f6';
+            element.style.outlineOffset = '4px';
+            // Remove the highlight after 3 seconds
+            setTimeout(() => {
+              element.style.outline = '';
+              element.style.outlineOffset = '';
+            }, 3000);
+          }
         }
       }, 100);
     },
@@ -69,7 +155,56 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
     },
   });
 
-  const handleValidation = () => {
+  const scrollToElement = (elementId: string) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+  };
+
+  // Handle pending validation after authentication
+  useEffect(() => {
+    console.log('useEffect triggered:', { 
+      user: !!user, 
+      pendingValidation: !!pendingValidation, 
+      validationResult: !!validationResult,
+      hasAutoSubmitted: hasAutoSubmitted.current 
+    });
+    
+    if (user && pendingValidation && !validationResult && !hasAutoSubmitted.current) {
+      console.log('Auto-submitting validation with data:', pendingValidation);
+      hasAutoSubmitted.current = true;
+      
+      // Pre-populate the form with pending validation data
+      setIdea(pendingValidation.idea);
+      setTargetCustomer(pendingValidation.targetCustomer);
+      setProblemSolved(pendingValidation.problemSolved);
+      scrollToElement('tell-us-about-your-idea');
+      // Auto-submit the validation
+      console.log('Calling validateMutation.mutate with:', pendingValidation);
+      validateMutation.mutate(pendingValidation);
+      
+      // Clear the pending validation
+      clearPendingValidation();
+      
+      toast({
+        title: "Welcome back!",
+        description: "Your idea validation is being processed...",
+      });
+    }
+  }, [user, pendingValidation, validationResult, clearPendingValidation, toast]);
+
+  // Reset auto-submit flag when user signs out or when there's no pending validation
+  useEffect(() => {
+    if (!user || !pendingValidation) {
+      hasAutoSubmitted.current = false;
+    }
+  }, [user, pendingValidation]);
+
+  const handleValidation = async () => {
     if (!idea.trim() || !targetCustomer.trim() || !problemSolved.trim()) {
       toast({
         title: "Missing Information",
@@ -78,6 +213,24 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
       });
       return;
     }
+
+    // Check if user is authenticated
+    if (!user) {
+      try {
+        // Store the form data and redirect to Google OAuth
+        await signIn({ idea, targetCustomer, problemSolved });
+        return; // The user will be redirected to Google OAuth
+      } catch (error) {
+        toast({
+          title: "Authentication Error",
+          description: "Failed to sign in with Google. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // User is authenticated, proceed with validation
     validateMutation.mutate({ idea, targetCustomer, problemSolved });
   };
 
@@ -122,7 +275,7 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
 
         <Card className="shadow-2xl border-2 border-primary/20 bg-card/80 backdrop-blur-sm animate-pulse-slow">
           <CardContent className="p-8">
-            <div className="text-center mb-8">
+            <div className="text-center mb-8" id="tell-us-about-your-idea">
               <span className="text-3xl">💭</span>
               <p className="text-lg font-semibold text-foreground mt-2">
                 Tell us about your idea in 3 quick steps
@@ -133,6 +286,18 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
             </div>
             
             <div className="space-y-6">
+              {/* Show pending validation message */}
+              {pendingValidation && user && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-800">
+                      Welcome back! Your form has been pre-filled and validation is in progress...
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Lightbulb className="w-5 h-5 text-primary" />
@@ -160,7 +325,7 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2" id="problem-solved-input">
                 <div className="flex items-center space-x-2">
                   <Target className="w-5 h-5 text-secondary" />
                   <label className="text-sm font-semibold text-foreground">What problem does it solve?</label>
@@ -175,23 +340,32 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
             </div>
             
             <div className="mt-8 flex justify-center">
-              <Button 
+              <Button id="validate-button" 
                 onClick={handleValidation}
-                disabled={validateMutation.isPending}
+                disabled={validateMutation.isPending || authLoading}
                 size="lg"
                 className="px-10 py-4 text-xl font-bold rounded-2xl shadow-2xl shadow-primary/30 bg-gradient-to-r from-primary via-accent to-primary hover:from-accent hover:via-primary hover:to-accent transition-all duration-300 transform hover:scale-110"
               >
                 {validateMutation.isPending && <Loader2 className="mr-3 h-6 w-6 animate-spin" />}
-                <span className="mr-2">🔬</span>
-                {validateMutation.isPending ? "AI analysis coming in 30 seconds..." : "Get AI Feedback!"}
-                {!validateMutation.isPending && <span className="ml-2">✨</span>}
+                {authLoading && <Loader2 className="mr-3 h-6 w-6 animate-spin" />}
+                <span className="mr-2">
+                  {!user ? "🔐" : "🔬"}
+                </span>
+                {validateMutation.isPending ? "AI analysis coming in 30 seconds..." : 
+                 authLoading ? "Checking authentication..." :
+                 !user ? "Get AI Feedback!" : "Get AI Feedback!"}
+                {!validateMutation.isPending && !authLoading && <span className="ml-2">✨</span>}
               </Button>
             </div>
 
             {validationResult && (() => {
               const feedbackHtml = parseFeedback(validationResult.feedback);
               return (
-                <div id="validation-response" className="mt-8 space-y-6 animate-in slide-in-from-bottom-4 duration-600">
+                <div 
+              id="validation-response" 
+              tabIndex={-1}
+              className="mt-8 space-y-6 animate-in slide-in-from-bottom-4 duration-600 focus:outline-none"
+            >
                   <div className="text-center mb-8">
                     <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-4 border-4 border-green-500 shadow-lg animate-bounce-gentle">
                       <img 
@@ -215,6 +389,30 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
                   {/* Save Results Component */}
                   <div className="mt-6">
                     <SaveResults validationData={validationResult} />
+                
+                {/* Auto-submit indicator */}
+                {hasAutoSubmitted.current && (
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg animate-pulse">
+                    <div className="flex items-center justify-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-800">
+                        🎉 Auto-submitted after authentication - Your form was automatically processed!
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Newsletter subscription indicator */}
+                {newsletterSubscribed && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-center space-x-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <span className="text-sm font-medium text-green-800">
+                        📧 You've been subscribed to our startup insights newsletter!
+                      </span>
+                    </div>
+                  </div>
+                )}
                   </div>
 
                 </div>

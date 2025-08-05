@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { storage } from "./storage";
+import { storage } from "./storage-supabase";
 import { insertSubmissionSchema, insertValidationSchema } from "@shared/schema";
 import { z } from "zod";
 import { generateValidationFeedback, generateLandingPagePrompt } from "./openai";
@@ -39,7 +39,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/attached_assets', express.static(path.resolve(process.cwd(), 'attached_assets')));
 
   // Validate startup idea (optional auth to track user data)
-  app.post("/api/validate", optionalAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/validate", async (req: AuthenticatedRequest, res, next) => {
+    console.log('Validate endpoint hit');
+    try {
+      await optionalAuth(req, res, next);
+    } catch (error) {
+      console.error('Auth middleware error:', error);
+      return next(error);
+    }
+  }, async (req: AuthenticatedRequest, res) => {
+    console.log('Validation handler executing');
+    console.log('Request body:', req.body);
+    console.log('User from request:', req.user);
+    
     try {
       const { idea, targetCustomer, problemSolved } = insertValidationSchema.parse(req.body);
       
@@ -50,6 +62,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         throw new Error("Failed to generate feedback");
       }
       
+      console.log('Creating validation with user ID:', req.user?.id);
       const validation = await storage.createValidation({ 
         idea, 
         targetCustomer, 
@@ -75,16 +88,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Submit project for newsletter consideration (optional auth)
-  app.post("/api/submit", upload.single('screenshot'), optionalAuth, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/submit", upload.single('screenshot'), async (req: AuthenticatedRequest, res, next) => {
     try {
-      const submissionData = {
+      await optionalAuth(req, res, next);
+    } catch (error) {
+      return next(error);
+    }
+  }, async (req: AuthenticatedRequest, res) => {
+    try {
+      const submissionData: {
+        name: string;
+        email: string;
+        projectName: string;
+        projectSummary: string;
+        siteUrl: string;
+        whatDoYouNeed: string;
+        screenshotPath?: string;
+      } = {
         name: req.body.name,
         email: req.body.email,
         projectName: req.body.projectName,
         projectSummary: req.body.projectSummary,
         siteUrl: req.body.siteUrl,
-        whatDoYouNeed: req.body.whatDoYouNeed,
-        screenshotPath: req.file?.path || null,
+        whatDoYouNeed: req.body.whatDoYouNeed || '',
+        screenshotPath: req.file?.path || undefined,
       };
 
       const validatedData = insertSubmissionSchema.parse(submissionData);
@@ -183,6 +210,36 @@ Create a landing page for this startup. The goal of the site is to highlight our
     }
   });
 
+  // User logout route - accessible via GET for easy URL access
+  app.get("/logout", async (req, res) => {
+    try {
+      // Clear any authentication cookies
+      res.clearCookie('auth_token');
+      res.clearCookie('user_session');
+      
+      // Redirect to home page with success message
+      res.redirect('/?message=Successfully logged out');
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Even if there's an error, redirect to home
+      res.redirect('/?message=Logged out');
+    }
+  });
+
+  // Alternative POST logout route for programmatic logout
+  app.post("/api/logout", async (req, res) => {
+    try {
+      // Clear any authentication cookies
+      res.clearCookie('auth_token');
+      res.clearCookie('user_session');
+      
+      res.json({ success: true, message: "Successfully logged out" });
+    } catch (error) {
+      console.error("Logout error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Admin authentication route
   app.post("/api/admin/login", async (req, res) => {
     try {
@@ -196,7 +253,7 @@ Create a landing page for this startup. The goal of the site is to highlight our
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 24);
       
-      const session = await storage.createAdminSession({ expiresAt });
+      const session = await storage.createAdminSession({ expires_at: expiresAt.toISOString() });
       
       // Set secure cookie
       res.cookie('admin_session', session.id, {
@@ -224,7 +281,7 @@ Create a landing page for this startup. The goal of the site is to highlight our
 
       const session = await storage.getAdminSession(sessionId);
       
-      if (!session || session.expiresAt < new Date()) {
+      if (!session || new Date(session.expires_at) < new Date()) {
         return res.status(401).json({ message: "Session expired" });
       }
 

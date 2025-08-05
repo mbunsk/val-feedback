@@ -23,16 +23,39 @@ export default function About() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast({
-      title: "Message Sent!",
-      description: "Thanks for reaching out. I'll get back to you soon!",
-    });
-    
-    setFormData({ name: "", email: "", subject: "", message: "" });
-    setIsSubmitting(false);
+    try {
+      const response = await fetch('https://napkin.com/temp/form-submit/email/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Message Sent!",
+          description: "Thanks for reaching out. I'll get back to you soon!",
+        });
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        throw new Error('Failed to send message');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -182,7 +205,7 @@ export default function About() {
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Subject *
                     </label>
-                    <Input
+                    <Input style={{ color: 'black' }}
                       name="subject"
                       value={formData.subject}
                       onChange={handleChange}
@@ -196,7 +219,7 @@ export default function About() {
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Message *
                     </label>
-                    <Textarea
+                    <Textarea style={{ color: 'black' }}
                       name="message"
                       value={formData.message}
                       onChange={handleChange}

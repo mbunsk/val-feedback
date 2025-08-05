@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ValidatorAI - Validate Your Startup Idea in Seconds</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        },
+                        violet: {
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/heroicons/1.0.6/heroicons.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .validation-response {
+            display: none;
+            animation: slideUp 0.6s ease-out;
+        }
+        .validation-response.show {
+            display: block;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="font-inter antialiased bg-gray-50 text-gray-900">
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md border-b border-gray-200 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-gradient-to-br from-primary-600 to-violet-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <span class="text-xl font-bold text-gray-900">ValidatorAI</span>
+                        </div>
+                    </div>
+                </div>
+                <nav class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#validate" class="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Validate Your Idea</a>
+                        <a href="#build" class="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Get a Landing Page</a>
+                        <a href="#submit" class="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Submit to Newsletter</a>
+                        <a href="#about" class="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">About</a>
+                    </div>
+                </nav>
+                <div class="md:hidden">
+                    <button type="button" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500" onclick="toggleMobileMenu()">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
+                <a href="#validate" class="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">Validate Your Idea</a>
+                <a href="#build" class="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">Get a Landing Page</a>
+                <a href="#submit" class="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">Submit to Newsletter</a>
+                <a href="#about" class="text-gray-700 hover:text-primary-600 block px-3 py-2 rounded-md text-base font-medium">About</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-20 bg-gradient-to-br from-white via-blue-50/30 to-violet-50/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+                    <span class="gradient-text">Validate Your Startup Idea</span>
+                    <br>in Seconds
+                </h1>
+                <p class="text-xl sm:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
+                    Get instant AI feedback, next steps, and launch support — and if it's good, we'll share it with <span class="font-semibold text-primary-600">200,000+ startup readers</span>.
+                </p>
+                <button onclick="scrollToSection('validate')" class="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-xl text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    Start Validating
+                    <svg class="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 1: Idea Validation -->
+    <section id="validate" class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-primary-100 text-primary-800 text-sm font-medium mb-4">
+                    <span class="w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2">1</span>
+                    Idea Validation
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                    Tell Us About Your Idea
+                </h2>
+                <p class="text-lg text-gray-600">
+                    We'll analyze your idea and give you instant feedback, market fit tips, and next steps to help you move forward.
+                </p>
+            </div>
+
+            <div class="bg-gray-50 rounded-2xl p-8 shadow-lg border border-gray-200">
+                <label for="idea-input" class="block text-sm font-medium text-gray-700 mb-3">
+                    Describe your idea in a sentence or two
+                </label>
+                <textarea
+                    id="idea-input"
+                    rows="4"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none text-lg"
+                    placeholder="e.g., A mobile app that uses AI to create personalized workout plans based on your fitness goals, available equipment, and schedule..."
+                    data-mock="true"
+                ></textarea>
+                
+                <div class="mt-6 flex justify-center">
+                    <button onclick="runValidation()" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 shadow-md hover:shadow-lg" data-event="click:runValidation">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" id="loading-spinner" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span id="button-text">Run Validation</span>
+                    </button>
+                </div>
+
+                <!-- Validation Response -->
+                <div id="validation-response" class="validation-response mt-8 p-6 bg-white rounded-xl border border-green-200 shadow-sm">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">✨ Great potential idea!</h3>
+                            <div class="space-y-3 text-gray-700">
+                                <p><strong>Market Fit:</strong> The personalized fitness app market is growing rapidly, with increasing demand for AI-powered health solutions.</p>
+                                <p><strong>Key Strengths:</strong> Personalization, AI integration, addresses common pain points in fitness planning.</p>
+                                <p><strong>Next Steps:</strong></p>
+                                <ul class="list-disc list-inside space-y-1 ml-4">
+                                    <li>Research existing competitors (MyFitnessPal, Freeletics)</li>
+                                    <li>Create a simple MVP focusing on one core feature</li>
+                                    <li>Test with 10-20 potential users for feedback</li>
+                                    <li>Consider partnerships with fitness equipment manufacturers</li>
+                                </ul>
+                                <p><strong>Potential Concerns:</strong> High competition, need for quality AI training data, user retention challenges.</p>
+                            </div>
+                            <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <p class="text-sm text-blue-800">
+                                    <strong>💡 Pro Tip:</strong> Start with a specific niche (e.g., "busy parents" or "home workout enthusiasts") to validate your concept before expanding.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 2: Make it Real -->
+    <section id="build" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-violet-100 text-violet-800 text-sm font-medium mb-4">
+                    <span class="w-6 h-6 bg-violet-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2">2</span>
+                    Build Your Landing Page
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                    Bring Your Idea to Life
+                </h2>
+                <p class="text-lg text-gray-600 mb-8">
+                    Pick one of our favorite site builders to create your landing page fast — no coding required.
+                </p>
+            </div>
+
+            <!-- Prompt Generator -->
+            <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 mb-12">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">📝 Generated Prompt for Your Site Builder</h3>
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <p class="text-sm text-gray-600 mb-3">Copy this prompt and paste it into any of the builders below:</p>
+                    <div class="bg-white p-4 rounded-lg border border-gray-300 font-mono text-sm text-gray-800" data-mock="true">
+                        Create a modern landing page for "FitAI" - a mobile app that uses AI to create personalized workout plans based on fitness goals, available equipment, and schedule. Include a hero section highlighting the AI personalization, features section showing workout customization, testimonials from beta users, pricing plans (free and premium tiers), and a waitlist signup form. Use a clean, fitness-focused design with blue and green accent colors. Target audience: busy professionals who want effective home workouts.
+                    </div>
+                    <button onclick="copyPrompt()" class="mt-3 inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Copy Prompt
+                    </button>
+                </div>
+            </div>
+
+            <!-- Site Builders -->
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Replit -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-center">
+                        <!-- Replit logo placeholder -->
+                        <div class="w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-orange-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Replit</h3>
+                        <p class="text-gray-600 mb-6">Fastest no-code builder with backend support.</p>
+                        <a href="https://replit.com" target="_blank" class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors">
+                            Start with Replit
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Lovable -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-center">
+                        <!-- Lovable logo placeholder -->
+                        <div class="w-16 h-16 bg-pink-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-pink-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Lovable</h3>
+                        <p class="text-gray-600 mb-6">Visual, drag-and-drop editor. Easy and sleek.</p>
+                        <a href="https://lovable.dev" target="_blank" class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-colors">
+                            Start with Lovable
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Typedream -->
+                <div class="bg-white rounded-2xl p-8 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                    <div class="text-center">
+                        <!-- Typedream logo placeholder -->
+                        <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10,9 9,9 8,9"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Typedream</h3>
+                        <p class="text-gray-600 mb-6">Notion-style UI, perfect for fast pages.</p>
+                        <a href="https://typedream.com" target="_blank" class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
+                            Start with Typedream
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 3: Submit Your Landing Page -->
+    <section id="submit" class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-sm font-medium mb-4">
+                    <span class="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-bold mr-2">3</span>
+                    Get Featured
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                    Want to Be Featured in Our Newsletter?
+                </h2>
+                <p class="text-lg text-gray-600">
+                    We showcase the best early startup ideas and projects to our audience of <span class="font-semibold text-primary-600">200,000+ founders, investors, and builders</span>.
+                </p>
+            </div>
+
+            <div class="bg-gray-50 rounded-2xl p-8 shadow-lg border border-gray-200">
+                <form id="submission-form" class="space-y-6" data-implementation="Should validate form before submission">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                            <input type="text" id="name" name="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Your full name" data-mock="true">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="your@email.com" data-mock="true">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="project-name" class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                        <input type="text" id="project-name" name="project-name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Your startup/project name" data-mock="true">
+                    </div>
+                    
+                    <div>
+                        <label for="project-summary" class="block text-sm font-medium text-gray-700 mb-2">Project Summary</label>
+                        <textarea id="project-summary" name="project-summary" rows="4" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none" placeholder="Brief description of what your project does and why it's unique..." data-mock="true"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label for="site-url" class="block text-sm font-medium text-gray-700 mb-2">Site URL</label>
+                        <input type="url" id="site-url" name="site-url" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="https://your-landing-page.com" data-mock="true">
+                    </div>
+                    
+                    <div>
+                        <label for="platform" class="block text-sm font-medium text-gray-700 mb-2">Platform Used</label>
+                        <select id="platform" name="platform" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent" data-mock="true">
+                            <option value="">Select platform...</option>
+                            <option value="replit">Replit</option>
+                            <option value="lovable">Lovable</option>
+                            <option value="typedream">Typedream</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="screenshot" class="block text-sm font-medium text-gray-700 mb-2">Screenshot (Optional)</label>
+                        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-primary-400 transition-colors">
+                            <div class="space-y-1 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="screenshot" class="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
+                                        <span>Upload a screenshot</span>
+                                        <input id="screenshot" name="screenshot" type="file" class="sr-only" accept="image/*" data-mock-image="true" data-implementation="Use FileUpload component here">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center">
+                        <button type="submit" class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-md hover:shadow-lg" data-event="click:handleSubmit">
+                            Submit for Consideration
+                        </button>
+                    </div>
+                </form>
+                
+                <p class="mt-6 text-sm text-gray-600 text-center">
+                    We personally select projects based on usefulness, clarity, and potential. If chosen, your idea will be seen by thousands.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Success Stories</h2>
+                <p class="text-lg text-gray-600">See what founders have achieved with ValidatorAI</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center">
+                            <span class="text-white font-semibold text-sm">JM</span>
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-semibold text-gray-900" data-mock="true">Jessica Martinez</p>
+                            <p class="text-sm text-gray-600" data-mock="true">Founder, MoodTracker</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700" data-mock="true">"ValidatorAI helped me refine my mental health app concept. The AI feedback was spot-on, and getting featured in their newsletter brought me 2,000+ signups!"</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
+                            <span class="text-white font-semibold text-sm">RC</span>
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-semibold text-gray-900" data-mock="true">Robert Chen</p>
+                            <p class="text-sm text-gray-600" data-mock="true">Founder, EcoDelivery</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700" data-mock="true">"The validation process saved me months of building the wrong thing. Now I have a sustainable delivery service with real customers."</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
+                            <span class="text-white font-semibold text-sm">SP</span>
+                        </div>
+                        <div class="ml-3">
+                            <p class="font-semibold text-gray-900" data-mock="true">Sarah Parker</p>
+                            <p class="text-sm text-gray-600" data-mock="true">Founder, StudyBuddy</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700" data-mock="true">"From validation to launch in 3 weeks! The site builder recommendations were perfect, and the newsletter feature got me early investors."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="about" class="bg-gray-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo and Description -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-600 to-violet-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold">ValidatorAI</span>
+                    </div>
+                    <p class="text-gray-400 mb-6 max-w-md">
+                        Helping entrepreneurs validate their startup ideas with AI-powered feedback and connect them with the tools and community they need to succeed.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <span class="sr-only">Twitter</span>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <span class="sr-only">LinkedIn</span>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <span class="sr-only">YouTube</span>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Company -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-300 tracking-wider uppercase mb-4">Company</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+
+                <!-- Legal -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-300 tracking-wider uppercase mb-4">Legal</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Terms</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-12 pt-8 border-t border-gray-800">
+                <p class="text-center text-gray-400 text-sm">
+                    © 2024 ValidatorAI. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Smooth scroll to section
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Run validation simulation
+        function runValidation() {
+            const button = document.querySelector('[onclick="runValidation()"]');
+            const buttonText = document.getElementById('button-text');
+            const spinner = document.getElementById('loading-spinner');
+            const response = document.getElementById('validation-response');
+            const textarea = document.getElementById('idea-input');
+            
+            if (textarea.value.trim() === '') {
+                alert('Please enter your startup idea first!');
+                return;
+            }
+            
+            // Show loading state
+            buttonText.textContent = 'Analyzing...';
+            spinner.classList.remove('hidden');
+            button.disabled = true;
+            
+            // TODO: Implement actual AI validation API call
+            setTimeout(() => {
+                // Hide loading state
+                buttonText.textContent = 'Run Validation';
+                spinner.classList.add('hidden');
+                button.disabled = false;
+                
+                // Show response
+                response.classList.add('show');
+                response.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 2000);
+        }
+
+        // Copy prompt to clipboard
+        function copyPrompt() {
+            const promptText = document.querySelector('.font-mono').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                // Show feedback
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>Copied!';
+                button.classList.add('text-green-600');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('text-green-600');
+                }, 2000);
+            });
+        }
+
+        // Form submission handling
+        document.getElementById('submission-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // TODO: Implement form validation and submission
+            const formData = new FormData(this);
+            
+            // Simulate submission
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = button.textContent;
+            
+            button.textContent = 'Submitting...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                alert('Thank you for your submission! We\'ll review your project and get back to you within 48 hours.');
+                button.textContent = originalText;
+                button.disabled = false;
+                this.reset();
+            }, 1500);
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe sections for animation
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>

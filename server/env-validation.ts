@@ -1,7 +1,8 @@
 // Environment validation and security checks
 export function validateEnvironment() {
   const requiredEnvVars = [
-    'DATABASE_URL',
+    'SUPABASE_URL',
+    'SUPABASE_ANON_KEY',
     'OPENAI_API_KEY'
   ];
 
@@ -11,15 +12,21 @@ export function validateEnvironment() {
     throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
   }
 
-  // Validate DATABASE_URL format (basic check)
-  const dbUrl = process.env.DATABASE_URL;
-  if (!dbUrl.startsWith('postgresql://') && !dbUrl.startsWith('postgres://')) {
-    throw new Error('DATABASE_URL must be a valid PostgreSQL connection string');
+  // Validate SUPABASE_URL format (basic check)
+  const supabaseUrl = process.env.SUPABASE_URL;
+  if (supabaseUrl && !supabaseUrl.startsWith('https://')) {
+    throw new Error('SUPABASE_URL must be a valid HTTPS URL');
+  }
+
+  // Validate SUPABASE_ANON_KEY format (basic check)
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  if (supabaseKey && supabaseKey.length < 20) {
+    console.warn('SUPABASE_ANON_KEY does not appear to be in expected format');
   }
 
   // Validate OPENAI_API_KEY format (basic check)
   const openaiKey = process.env.OPENAI_API_KEY;
-  if (!openaiKey.startsWith('sk-')) {
+  if (openaiKey && !openaiKey.startsWith('sk-')) {
     console.warn('OPENAI_API_KEY does not appear to be in expected format');
   }
 

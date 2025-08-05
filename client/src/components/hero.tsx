@@ -1,7 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import React, { useEffect, useState } from 'react';
 
 export default function Hero() {
+
+  const [subscriberCount, setSubscriberCount] = useState(null);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const response = await fetch('https://validatorai.com/postback/fetch_count_json.php');
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const data = await response.json();
+
+        // Access val_subs
+        const count = data.val_subs || 0;
+        setSubscriberCount(count);
+      } catch (err) {
+        console.error('Fetch error:', err);
+        setSubscriberCount(0);
+      }
+    };
+
+    fetchCount();
+  }, []);
+  
   const scrollToValidation = () => {
     const element = document.getElementById('validate');
     if (element) {
@@ -87,7 +110,7 @@ export default function Hero() {
                     className="w-6 h-6 rounded-full border-2 border-white shadow-sm object-cover"
                   />
                 </div>
-                <span className="text-lg font-bold text-white">278,355</span>
+                <span className="text-lg font-bold text-white">{subscriberCount}</span>
                 <span className="text-sm text-white/80">entrepreneurs validated</span>
               </div>
             </div>
