@@ -21,4 +21,5 @@ build
 *~
 uploads/*
 !uploads/.gitkeep
-server/vite.ts 
+server/vite.ts
+server/vite-dev.ts 

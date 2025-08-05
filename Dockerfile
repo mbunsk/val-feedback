@@ -18,6 +18,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build the application (needs all dependencies including devDependencies)
+# Replace development server with production server
+RUN cp server/index.prod.ts server/index.ts
 RUN npm run build
 
 # Production image, copy all the files and run the app
