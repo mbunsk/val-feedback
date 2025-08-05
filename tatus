@@ -1,0 +1,10 @@
+[33m8be248b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Initial commit
+[33m1da838d[m Improve feedback organization and refine AI prompt for site summaries
+[33m4946ec6[m Improve the speed and readability of the validation reports
+[33m0cfa2ec[m Improve PDF formatting and refine AI prompt for landing page generation
+[33mcebeebe[m Improve how startup ideas are polished for compelling landing pages
+[33md84f8be[m Improve AI analysis messages and refine landing page generation process
+[33m9e9fde8[m Update the text displayed while awaiting AI feedback on idea validation
+[33m114d528[m Update the introductory text to reflect Val's offerings more accurately
+[33m26879fb[m Improve visibility of online status indicator on user profile pictures
+[33m4eec377[m Make the online status indicator smaller and pulse at a slower rate

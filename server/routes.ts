@@ -35,6 +35,11 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
   // Serve attached assets statically
   app.use('/attached_assets', express.static(path.resolve(process.cwd(), 'attached_assets')));
 

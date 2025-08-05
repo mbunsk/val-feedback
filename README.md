@@ -139,6 +139,73 @@ The application will be available at `http://localhost:5000`
 - `npm run db:push` - Push database schema changes
 - `npm run check` - TypeScript type checking
 
+## Docker Deployment
+
+### Quick Start
+
+```bash
+# Build and run with Docker Compose (production)
+docker-compose up -d
+
+# Or use the helper script
+./docker-scripts.sh compose
+# On Windows: docker-scripts.bat compose
+```
+
+### Development with Docker
+
+```bash
+# Build and run development container
+docker-compose --profile dev up -d
+
+# Or use the helper script
+./docker-scripts.sh compose-dev
+# On Windows: docker-scripts.bat compose-dev
+```
+
+### Manual Docker Commands
+
+```bash
+# Build production image
+docker build -t validatorai:latest .
+
+# Build development image
+docker build -f Dockerfile.dev -t validatorai:dev .
+
+# Run production container
+docker run -d --name validatorai-app -p 5000:5000 --env-file .env validatorai:latest
+
+# Run development container
+docker run -d --name validatorai-dev -p 5000:5000 --env-file .env -v $(pwd):/app validatorai:dev
+```
+
+### Helper Scripts
+
+The project includes helper scripts for common Docker operations:
+
+**Linux/Mac:**
+```bash
+./docker-scripts.sh [command]
+```
+
+**Windows:**
+```cmd
+docker-scripts.bat [command]
+```
+
+**Available commands:**
+- `build` - Build production Docker image
+- `build-dev` - Build development Docker image
+- `run` - Run production container
+- `run-dev` - Run development container
+- `compose` - Start with Docker Compose (production)
+- `compose-dev` - Start with Docker Compose (development)
+- `stop` - Stop all containers
+- `logs` - Show container logs
+- `clean` - Clean up Docker resources
+- `shell` - Open shell in production container
+- `shell-dev` - Open shell in development container
+
 ## Project Structure
 
 ```
