@@ -3,7 +3,15 @@ import express, { type Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
 import { validateEnvironment } from "./env-validation";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+
+// Production-safe logging and static serving
+const log = console.log;
+const serveStatic = (app: any) => {
+  app.use(express.static('dist/public'));
+  app.use("*", (_req: any, res: any) => {
+    res.sendFile('dist/public/index.html');
+  });
+};
 
 // Validate environment security before starting
 validateEnvironment();
@@ -58,6 +66,8 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    // Dynamically import Vite for development
+    const { setupVite } = await import("./vite");
     await setupVite(app, server);
   } else {
     serveStatic(app);
