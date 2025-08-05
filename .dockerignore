@@ -20,4 +20,5 @@ build
 *.swo
 *~
 uploads/*
-!uploads/.gitkeep 
+!uploads/.gitkeep
+server/vite.ts 
