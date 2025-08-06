@@ -52,14 +52,30 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const userData = {
+      email: insertUser.email,
+      name: insertUser.name,
+      google_id: insertUser.googleId,
+      avatar: insertUser.avatar
+    };
+
     const { data, error } = await supabase
       .from('users')
-      .insert(insertUser)
+      .insert(userData)
       .select()
       .single();
     
     if (error) throw new Error(`Failed to create user: ${error.message}`);
-    return data as User;
+    
+    // Transform snake_case to camelCase for frontend compatibility
+    return {
+      id: data.id,
+      googleId: data.google_id,
+      email: data.email,
+      name: data.name,
+      avatar: data.avatar,
+      createdAt: data.created_at
+    } as unknown as User;
   }
 
   async createValidation(insertValidation: InsertValidation, feedback: string, userId?: string): Promise<Validation> {
@@ -115,7 +131,14 @@ export class SupabaseStorage implements IStorage {
   async getAllValidations(): Promise<Validation[]> {
     const { data, error } = await supabase
       .from('validations')
-      .select('*')
+      .select(`
+        *,
+        users (
+          id,
+          email,
+          name
+        )
+      `)
       .order('created_at', { ascending: false });
     
     if (error) throw new Error(`Failed to get all validations: ${error.message}`);
@@ -128,7 +151,12 @@ export class SupabaseStorage implements IStorage {
       targetCustomer: item.target_customer,
       problemSolved: item.problem_solved,
       feedback: item.feedback,
-      createdAt: item.created_at
+      createdAt: item.created_at,
+      user: item.users ? {
+        id: item.users.id,
+        email: item.users.email,
+        name: item.users.name
+      } : null
     })) as unknown as Validation[];
   }
 

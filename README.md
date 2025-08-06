@@ -7,7 +7,8 @@ This is a **ValidatorAI** application that helps entrepreneurs validate their bu
 - **Frontend**: React + TypeScript + Vite + Tailwind CSS + Radix UI
 - **Backend**: Express.js + TypeScript + Drizzle ORM + PostgreSQL
 - **AI Integration**: OpenAI API for idea validation
-- **Authentication**: JWT-based with Google OAuth support
+- **Authentication**: Google OAuth 2.0 with Passport.js + Express sessions
+- **Database**: Supabase (PostgreSQL)
 - **Newsletter**: Beehiiv integration for automatic newsletter subscriptions
 
 ## Prerequisites
@@ -39,34 +40,35 @@ cp client/env.example client/.env
 
 Edit `.env` and set the following variables:
 
-- `SUPABASE_URL`: Your Supabase project URL
-- `SUPABASE_ANON_KEY`: Your Supabase anon key
+- `DATABASE_URL`: Your Supabase database URL
 - `OPENAI_API_KEY`: Your OpenAI API key
-- `JWT_SECRET`: A secure random string (optional - will be auto-generated)
+- `GOOGLE_CLIENT_ID`: Your Google OAuth Client ID
+- `GOOGLE_CLIENT_SECRET`: Your Google OAuth Client Secret
+- `GOOGLE_CALLBACK_URL`: OAuth callback URL (default: http://localhost:5000/auth/google/callback)
+- `SESSION_SECRET`: A secure random string for session encryption
 - `PORT`: Server port (default: 5000)
 
 Edit `client/.env` and set:
-- `VITE_SUPABASE_URL`: Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key
+- `VITE_GOOGLE_CLIENT_ID`: Your Google OAuth Client ID (for frontend)
 - `VITE_BEEHIIV_API_KEY`: Your Beehiiv API key for newsletter subscriptions
 
-### 3. Supabase Setup
+### 3. Google OAuth Setup
 
-#### Step 1: Create Supabase Project
-1. Go to https://supabase.com
-2. Sign up and create a new project
-3. Copy your project URL and anon key from Settings → API
+#### Step 1: Create Google OAuth Credentials
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Enable **Google+ API** and **Google OAuth 2.0**
+4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
+5. Set **Authorized redirect URIs** to: `http://localhost:5000/auth/google/callback`
+6. Copy your **Client ID** and **Client Secret**
 
-#### Step 2: Set Up Google OAuth
-1. In your Supabase dashboard, go to **Authentication** → **Providers**
-2. Enable **Google** provider
-3. Set up Google OAuth in Google Cloud Console:
-   - Go to https://console.cloud.google.com
-   - Create a new project or select existing one
-   - Enable Google+ API
-   - Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client IDs**
-   - Set authorized redirect URI to: `https://[YOUR-PROJECT-REF].supabase.co/auth/v1/callback`
-4. Copy the Client ID and Client Secret to Supabase Google provider settings
+#### Step 2: Configure Environment Variables
+Add your Google OAuth credentials to your `.env` file:
+```bash
+GOOGLE_CLIENT_ID=your_actual_google_client_id
+GOOGLE_CLIENT_SECRET=your_actual_google_client_secret
+SESSION_SECRET=your_random_session_secret_here
+```
 
 #### Step 3: Create Database Tables
 Run the SQL commands in Supabase SQL Editor to create the required tables:

@@ -67,6 +67,12 @@ export type User = typeof users.$inferSelect;
 export type InsertSubmission = z.infer<typeof insertSubmissionSchema>;
 export type Submission = typeof submissions.$inferSelect;
 export type InsertValidation = z.infer<typeof insertValidationSchema>;
-export type Validation = typeof validations.$inferSelect;
+export type Validation = typeof validations.$inferSelect & {
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+  } | null;
+};
 export type InsertAdminSession = z.infer<typeof insertAdminSessionSchema>;
 export type AdminSession = typeof adminSessions.$inferSelect;

@@ -296,6 +296,15 @@ function AdminDashboard() {
                               <span>{formatDate(validation.createdAt)}</span>
                             </div>
 
+                            {validation.user && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <User className="w-4 h-4" />
+                                <span>{validation.user.name}</span>
+                                <span>•</span>
+                                <span>{validation.user.email}</span>
+                              </div>
+                            )}
+
                             <div>
                               <h4 className="font-semibold mb-2">Idea:</h4>
                               <p className="text-sm text-muted-foreground leading-relaxed">

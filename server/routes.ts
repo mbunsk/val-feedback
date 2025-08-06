@@ -9,6 +9,8 @@ import { z } from "zod";
 import { generateValidationFeedback, generateLandingPagePrompt } from "./openai";
 import { requireAuth, optionalAuth, AuthenticatedRequest } from "./auth";
 import OpenAI from "openai";
+import { passport } from "./auth-config";
+import session from "express-session";
 
 // Validate that OpenAI API key is present
 if (!process.env.OPENAI_API_KEY) {
@@ -35,6 +37,22 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+  }));
+
+  // Initialize Passport
+  app.use(passport.initialize());
+  app.use(passport.session());
+
   // Health check endpoint
   app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -242,6 +260,39 @@ Create a landing page for this startup. The goal of the site is to highlight our
     } catch (error) {
       console.error("Logout error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Google OAuth routes
+  app.get('/auth/google', passport.authenticate('google'));
+
+  app.get('/auth/google/callback', 
+    passport.authenticate('google', { 
+      failureRedirect: '/?error=auth_failed',
+      successRedirect: '/?message=login_success'
+    })
+  );
+
+  app.get('/auth/logout', (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.redirect('/?error=logout_failed');
+      }
+      res.redirect('/?message=logout_success');
+    });
+  });
+
+  app.get('/api/auth/user', (req, res) => {
+    if (req.isAuthenticated()) {
+      res.json({
+        id: req.user?.id,
+        email: req.user?.email,
+        name: req.user?.name,
+        avatar: req.user?.avatar
+      });
+    } else {
+      res.status(401).json({ message: 'Not authenticated' });
     }
   });
 

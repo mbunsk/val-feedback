@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase, signInWithGoogle, signOut } from '@/lib/supabase';
+
+interface AuthenticatedUser {
+  id: string;
+  googleId: string | null;
+  email: string;
+  name: string;
+  avatar: string | null;
+  createdAt: Date | null;
+}
 
 interface ValidationFormData {
   idea: string;
@@ -9,8 +16,7 @@ interface ValidationFormData {
 }
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: AuthenticatedUser | null;
   loading: boolean;
   pendingValidation: ValidationFormData | null;
   signIn: (formData?: ValidationFormData) => Promise<void>;
@@ -21,31 +27,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AuthenticatedUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingValidation, setPendingValidation] = useState<ValidationFormData | null>(null);
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state change:', event, session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+  // Check authentication status on mount and after page load
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch('/api/auth/user', {
+        credentials: 'include'
+      });
       
-      // If user just signed in, check for pending validation in localStorage
-      if (event === 'SIGNED_IN' && session?.user) {
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('User authenticated:', userData.email);
+        setUser(userData);
+        
+        // Check for pending validation if user just signed in
         const storedValidation = localStorage.getItem('pendingValidation');
         if (storedValidation) {
           try {
@@ -57,10 +55,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.removeItem('pendingValidation');
           }
         }
+      } else {
+        console.log('User not authenticated');
+        setUser(null);
       }
-    });
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return () => subscription.unsubscribe();
+  useEffect(() => {
+    checkAuthStatus();
+    
+    // Check auth status when page becomes visible (after OAuth redirect)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        checkAuthStatus();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const signIn = async (formData?: ValidationFormData) => {
@@ -71,7 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Store in localStorage to persist across OAuth redirect
         localStorage.setItem('pendingValidation', JSON.stringify(formData));
       }
-      await signInWithGoogle();
+      
+      // Redirect to Google OAuth
+      window.location.href = '/auth/google';
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;
@@ -80,7 +103,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleSignOut = async () => {
     try {
-      await signOut();
+      // Redirect to logout endpoint
+      window.location.href = '/auth/logout';
       setPendingValidation(null); // Clear pending validation on sign out
       localStorage.removeItem('pendingValidation'); // Clear from localStorage too
     } catch (error) {
@@ -97,7 +121,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user,
-    session,
     loading,
     pendingValidation,
     signIn,

@@ -1,5 +1,4 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { supabase } from "./supabase";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -15,23 +14,9 @@ export async function apiRequest(
 ): Promise<Response> {
   console.log('apiRequest called:', { method, url, hasData: !!data });
   
-  // Get the current session to include the access token
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  console.log('Session found:', !!session);
-  console.log('Access token found:', !!session?.access_token);
-  
   const headers: Record<string, string> = {};
   if (data) {
     headers["Content-Type"] = "application/json";
-  }
-  
-  // Add authorization header if we have a session
-  if (session?.access_token) {
-    headers["Authorization"] = `Bearer ${session.access_token}`;
-    console.log('Authorization header added');
-  } else {
-    console.log('No access token available');
   }
 
   console.log('Making request with headers:', Object.keys(headers));
@@ -41,7 +26,7 @@ export async function apiRequest(
       method,
       headers,
       body: data ? JSON.stringify(data) : undefined,
-      credentials: "include",
+      credentials: "include", // Include cookies for session-based auth
     });
 
     console.log('Response status:', res.status);

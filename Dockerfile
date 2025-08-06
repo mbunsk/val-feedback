@@ -18,16 +18,13 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build arguments for Vite environment variables
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_ANON_KEY
+ARG VITE_GOOGLE_CLIENT_ID
 
 # Set environment variables for build
-ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
-ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
 
 # Create .env file for Vite build
-RUN echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" > .env && \
-    echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY" >> .env
+RUN echo "VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID" > .env
 
 # Build the application (needs all dependencies including devDependencies)
 # Replace development server with production server
