@@ -24,7 +24,7 @@ export default function Home() {
       <SiteBuilders validationData={validationData} />
       <NewsletterForm />
       <Testimonials />
-      <NewsletterSignup />
+ 
       <Footer />
     </div>
   );

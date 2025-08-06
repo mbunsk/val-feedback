@@ -29,24 +29,10 @@ export default function NewsletterSignup() {
 
   const subscribeMutation = useMutation({
     mutationFn: async (data: NewsletterData) => {
-      const response = await fetch('https://napkin.com/temp/form-submit/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: data.email.split('@')[0], // Use email prefix as name
-          email: data.email 
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (response.ok) {
-        console.log('Successfully subscribed to newsletter:', result);
-        return { success: true, message: "Successfully subscribed!" };
-      } else {
-        console.error('Newsletter subscription failed:', result);
-        throw new Error('Newsletter subscription failed');
-      }
+      // For now, we'll just simulate a successful subscription
+      // Later this can be connected to an actual newsletter service
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return { success: true, message: "Successfully subscribed!" };
     },
     onSuccess: () => {
       toast({
