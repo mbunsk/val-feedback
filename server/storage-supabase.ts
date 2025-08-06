@@ -8,6 +8,7 @@ export interface IStorage {
   createUser(insertUser: InsertUser): Promise<User>;
   createValidation(insertValidation: InsertValidation, feedback: string, userId?: string): Promise<Validation>;
   getUserValidations(userId: string): Promise<Validation[]>;
+  getAllValidations(): Promise<Validation[]>;
   createSubmission(insertSubmission: InsertSubmission, userId?: string): Promise<Submission>;
   getUserSubmissions(userId: string): Promise<Submission[]>;
   getAllSubmissions(): Promise<Submission[]>;
@@ -77,7 +78,17 @@ export class SupabaseStorage implements IStorage {
       .single();
     
     if (error) throw new Error(`Failed to create validation: ${error.message}`);
-    return data as Validation;
+    
+    // Transform snake_case to camelCase for frontend compatibility
+    return {
+      id: data.id,
+      userId: data.user_id,
+      idea: data.idea,
+      targetCustomer: data.target_customer,
+      problemSolved: data.problem_solved,
+      feedback: data.feedback,
+      createdAt: data.created_at
+    } as unknown as Validation;
   }
 
   async getUserValidations(userId: string): Promise<Validation[]> {
@@ -88,7 +99,37 @@ export class SupabaseStorage implements IStorage {
       .order('created_at', { ascending: false });
     
     if (error) throw new Error(`Failed to get user validations: ${error.message}`);
-    return data as Validation[] || [];
+    
+    // Transform snake_case to camelCase for frontend compatibility
+    return (data || []).map((item: any) => ({
+      id: item.id,
+      userId: item.user_id,
+      idea: item.idea,
+      targetCustomer: item.target_customer,
+      problemSolved: item.problem_solved,
+      feedback: item.feedback,
+      createdAt: item.created_at
+    })) as unknown as Validation[];
+  }
+
+  async getAllValidations(): Promise<Validation[]> {
+    const { data, error } = await supabase
+      .from('validations')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw new Error(`Failed to get all validations: ${error.message}`);
+    
+    // Transform snake_case to camelCase for frontend compatibility
+    return (data || []).map((item: any) => ({
+      id: item.id,
+      userId: item.user_id,
+      idea: item.idea,
+      targetCustomer: item.target_customer,
+      problemSolved: item.problem_solved,
+      feedback: item.feedback,
+      createdAt: item.created_at
+    })) as unknown as Validation[];
   }
 
   async createSubmission(insertSubmission: InsertSubmission, userId?: string): Promise<Submission> {
@@ -110,7 +151,20 @@ export class SupabaseStorage implements IStorage {
       .single();
     
     if (error) throw new Error(`Failed to create submission: ${error.message}`);
-    return data as Submission;
+    
+    // Transform snake_case to camelCase for frontend compatibility
+    return {
+      id: data.id,
+      userId: data.user_id,
+      name: data.name,
+      email: data.email,
+      projectName: data.project_name,
+      projectSummary: data.project_summary,
+      siteUrl: data.site_url,
+      whatDoYouNeed: data.what_do_you_need,
+      screenshotPath: data.screenshot_path,
+      createdAt: data.created_at
+    } as unknown as Submission;
   }
 
   async getUserSubmissions(userId: string): Promise<Submission[]> {
@@ -121,7 +175,20 @@ export class SupabaseStorage implements IStorage {
       .order('created_at', { ascending: false });
     
     if (error) throw new Error(`Failed to get user submissions: ${error.message}`);
-    return data as Submission[] || [];
+    
+    // Transform snake_case to camelCase for frontend compatibility
+    return (data || []).map((item: any) => ({
+      id: item.id,
+      userId: item.user_id,
+      name: item.name,
+      email: item.email,
+      projectName: item.project_name,
+      projectSummary: item.project_summary,
+      siteUrl: item.site_url,
+      whatDoYouNeed: item.what_do_you_need,
+      screenshotPath: item.screenshot_path,
+      createdAt: item.created_at
+    })) as unknown as Submission[];
   }
 
   async getAllSubmissions(): Promise<Submission[]> {
@@ -131,7 +198,20 @@ export class SupabaseStorage implements IStorage {
       .order('created_at', { ascending: false });
     
     if (error) throw new Error(`Failed to get all submissions: ${error.message}`);
-    return data as Submission[] || [];
+    
+    // Transform snake_case to camelCase for frontend compatibility
+    return (data || []).map((item: any) => ({
+      id: item.id,
+      userId: item.user_id,
+      name: item.name,
+      email: item.email,
+      projectName: item.project_name,
+      projectSummary: item.project_summary,
+      siteUrl: item.site_url,
+      whatDoYouNeed: item.what_do_you_need,
+      screenshotPath: item.screenshot_path,
+      createdAt: item.created_at
+    })) as unknown as Submission[];
   }
 
   async createAdminSession(insertSession: InsertAdminSession): Promise<AdminSession> {

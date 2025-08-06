@@ -308,6 +308,17 @@ Create a landing page for this startup. The goal of the site is to highlight our
     }
   });
 
+  // Get all validations (admin only)
+  app.get("/api/admin/validations", requireAdmin, async (req, res) => {
+    try {
+      const validations = await storage.getAllValidations();
+      res.json(validations);
+    } catch (error) {
+      console.error("Get validations error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Admin logout
   app.post("/api/admin/logout", async (req, res) => {
     res.clearCookie('admin_session');

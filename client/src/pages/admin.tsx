@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Calendar, Globe, User, FileText, ExternalLink } from "lucide-react";
+import { LogOut, Calendar, Globe, User, FileText, ExternalLink, ChevronLeft, ChevronRight, Lightbulb } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Submission } from "@shared/schema";
+import type { Submission, Validation } from "@shared/schema";
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -74,12 +74,63 @@ function AdminLogin({ onLogin }: AdminLoginProps) {
   );
 }
 
+// Pagination component
+function Pagination({ 
+  currentPage, 
+  totalPages, 
+  onPageChange 
+}: { 
+  currentPage: number; 
+  totalPages: number; 
+  onPageChange: (page: number) => void; 
+}) {
+  return (
+    <div className="flex items-center justify-between px-2 py-4">
+      <div className="text-sm text-muted-foreground">
+        Page {currentPage} of {totalPages}
+      </div>
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage <= 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages}
+        >
+          Next
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function AdminDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Pagination state for submissions
+  const [submissionsPage, setSubmissionsPage] = useState(1);
+  const submissionsPerPage = 10;
+  
+  // Pagination state for validations
+  const [validationsPage, setValidationsPage] = useState(1);
+  const validationsPerPage = 10;
 
-  const { data: submissions, isLoading } = useQuery<Submission[]>({
+  const { data: submissions, isLoading: submissionsLoading } = useQuery<Submission[]>({
     queryKey: ["/api/admin/submissions"],
+  });
+
+  const { data: validations, isLoading: validationsLoading } = useQuery<Validation[]>({
+    queryKey: ["/api/admin/validations"],
   });
 
   const logoutMutation = useMutation({
@@ -114,6 +165,18 @@ function AdminDashboard() {
     }
   };
 
+  // Calculate pagination for submissions
+  const submissionsStartIndex = (submissionsPage - 1) * submissionsPerPage;
+  const submissionsEndIndex = submissionsStartIndex + submissionsPerPage;
+  const paginatedSubmissions = submissions?.slice(submissionsStartIndex, submissionsEndIndex) || [];
+  const totalSubmissionsPages = Math.ceil((submissions?.length || 0) / submissionsPerPage);
+
+  // Calculate pagination for validations
+  const validationsStartIndex = (validationsPage - 1) * validationsPerPage;
+  const validationsEndIndex = validationsStartIndex + validationsPerPage;
+  const paginatedValidations = validations?.slice(validationsStartIndex, validationsEndIndex) || [];
+  const totalValidationsPages = Math.ceil((validations?.length || 0) / validationsPerPage);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <div className="max-w-7xl mx-auto p-6">
@@ -121,7 +184,7 @@ function AdminDashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-primary">Admin Dashboard</h1>
-            <p className="text-muted-foreground mt-1">ValidatorAI Newsletter Submissions</p>
+            <p className="text-muted-foreground mt-1">ValidatorAI Data Management</p>
           </div>
           <Button
             onClick={() => logoutMutation.mutate()}
@@ -134,7 +197,7 @@ function AdminDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -147,6 +210,18 @@ function AdminDashboard() {
             </CardContent>
           </Card>
           
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Validations</p>
+                  <p className="text-2xl font-bold">{validations?.length || 0}</p>
+                </div>
+                <Lightbulb className="w-8 h-8 text-yellow-500" />
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -182,99 +257,201 @@ function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Submissions List */}
-        <Card>
+
+
+        {/* Validations Section */}
+        <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Newsletter Submissions</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Lightbulb className="w-5 h-5" />
+              Idea Validations
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {validationsLoading ? (
+              <div className="text-center py-8">Loading validations...</div>
+            ) : validations?.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No validations yet
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  {paginatedValidations.map((validation) => (
+                    <Card key={validation.id} className="border-l-4 border-l-yellow-500">
+                      <CardContent className="p-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <h3 className="text-lg font-semibold text-yellow-600">
+                                Idea Validation
+                              </h3>
+                              <Badge className="bg-yellow-500 text-white">
+                                Validation
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="w-4 h-4" />
+                              <span>{formatDate(validation.createdAt)}</span>
+                            </div>
+
+                            <div>
+                              <h4 className="font-semibold mb-2">Idea:</h4>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {validation.idea}
+                              </p>
+                            </div>
+
+                            <div>
+                              <h4 className="font-semibold mb-2">Target Customer:</h4>
+                              <p className="text-sm font-medium text-yellow-600 bg-yellow-50 p-2 rounded">
+                                {validation.targetCustomer}
+                              </p>
+                            </div>
+
+                            <div>
+                              <h4 className="font-semibold mb-2">Problem Solved:</h4>
+                              <p className="text-sm font-medium text-yellow-600 bg-yellow-50 p-2 rounded">
+                                {validation.problemSolved}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div>
+                              <h4 className="font-semibold mb-2">AI Feedback:</h4>
+                              <div 
+                                className="text-sm text-muted-foreground leading-relaxed max-h-64 overflow-y-auto"
+                                dangerouslySetInnerHTML={{ __html: validation.feedback }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                {totalValidationsPages > 1 && (
+                  <Pagination
+                    currentPage={validationsPage}
+                    totalPages={totalValidationsPages}
+                    onPageChange={setValidationsPage}
+                  />
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Submissions Section */}
+        <Card >
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Share Idea Submissions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {submissionsLoading ? (
               <div className="text-center py-8">Loading submissions...</div>
             ) : submissions?.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 No submissions yet
               </div>
             ) : (
-              <div className="space-y-4">
-                {submissions?.map((submission) => (
-                  <Card key={submission.id} className="border-l-4 border-l-primary">
-                    <CardContent className="p-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          <div className="flex items-start justify-between">
-                            <h3 className="text-lg font-semibold text-primary">
-                              {submission.projectName}
-                            </h3>
-                            <Badge className="bg-primary text-white">
-                              Submission
-                            </Badge>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <User className="w-4 h-4" />
-                            <span>{submission.name}</span>
-                            <span>•</span>
-                            <span>{submission.email}</span>
-                          </div>
-
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="w-4 h-4" />
-                            <span>{formatDate(submission.createdAt)}</span>
-                          </div>
-
-                          {submission.siteUrl && (
-                            <div className="flex items-center gap-2">
-                              <Globe className="w-4 h-4 text-primary" />
-                              <a
-                                href={submission.siteUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline flex items-center gap-1"
-                              >
-                                {submission.siteUrl}
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
+              <>
+                <div className="space-y-4">
+                  {paginatedSubmissions.map((submission) => (
+                    <Card key={submission.id} className="border-l-4 border-l-primary">
+                      <CardContent className="p-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <h3 className="text-lg font-semibold text-primary">
+                                {submission.projectName}
+                              </h3>
+                              <Badge className="bg-primary text-white">
+                                Submission
+                              </Badge>
                             </div>
-                          )}
-                        </div>
+                            
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <User className="w-4 h-4" />
+                              <span>{submission.name}</span>
+                              <span>•</span>
+                              <span>{submission.email}</span>
+                            </div>
 
-                        <div className="space-y-3">
-                          <div>
-                            <h4 className="font-semibold mb-2">Project Summary:</h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                              {submission.projectSummary}
-                            </p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="w-4 h-4" />
+                              <span>{formatDate(submission.createdAt)}</span>
+                            </div>
+
+                            {submission.siteUrl && (
+                              <div className="flex items-center gap-2">
+                                <Globe className="w-4 h-4 text-primary" />
+                                <a
+                                  href={submission.siteUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline flex items-center gap-1"
+                                >
+                                  {submission.siteUrl}
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              </div>
+                            )}
                           </div>
 
-                          <div>
-                            <h4 className="font-semibold mb-2">What They Need:</h4>
-                            <p className="text-sm font-medium text-primary bg-primary/10 p-2 rounded">
-                              {submission.whatDoYouNeed || 'Not specified'}
-                            </p>
-                          </div>
-
-                          {submission.screenshotPath && (
+                          <div className="space-y-3">
                             <div>
-                              <h4 className="font-semibold mb-2">Screenshot:</h4>
-                              <img
-                                src={`/${submission.screenshotPath}`}
-                                alt={`${submission.projectName} screenshot`}
-                                className="w-full max-w-sm rounded-lg border"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                              />
+                              <h4 className="font-semibold mb-2">Project Summary:</h4>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {submission.projectSummary}
+                              </p>
                             </div>
-                          )}
+
+                            <div>
+                              <h4 className="font-semibold mb-2">What They Need:</h4>
+                              <p className="text-sm font-medium text-primary bg-primary/10 p-2 rounded">
+                                {submission.whatDoYouNeed || 'Not specified'}
+                              </p>
+                            </div>
+
+                            {submission.screenshotPath && (
+                              <div>
+                                <h4 className="font-semibold mb-2">Screenshot:</h4>
+                                <img
+                                  src={`/${submission.screenshotPath}`}
+                                  alt={`${submission.projectName} screenshot`}
+                                  className="w-full max-w-sm rounded-lg border"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                {totalSubmissionsPages > 1 && (
+                  <Pagination
+                    currentPage={submissionsPage}
+                    totalPages={totalSubmissionsPages}
+                    onPageChange={setSubmissionsPage}
+                  />
+                )}
+              </>
             )}
           </CardContent>
         </Card>
+        
       </div>
     </div>
   );
