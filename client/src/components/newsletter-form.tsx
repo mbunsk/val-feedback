@@ -65,7 +65,27 @@ export default function NewsletterForm() {
 
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // Subscribe to newsletter after successful submission
+      try {
+        const newsletterResponse = await fetch('https://napkin.com/temp/form-submit/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            name: form.getValues('name'),
+            email: form.getValues('email')
+          }),
+        });
+
+        if (newsletterResponse.ok) {
+          console.log('Successfully subscribed to newsletter after submission');
+        } else {
+          console.error('Newsletter subscription failed after submission');
+        }
+      } catch (error) {
+        console.error('Newsletter subscription error after submission:', error);
+      }
+
       toast({
         title: "Success!",
         description: data.message,

@@ -56,7 +56,7 @@ export default function Testimonials() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center mb-12">
           <span className="text-4xl animate-wiggle mb-4 block">🏆</span>
-          <h2 className="text-3xl sm:text-5xl font-black mb-4 gradient-text">Exploration Stories!</h2>
+          <h2 id="testimonials" className="text-3xl sm:text-5xl font-black mb-4 gradient-text">Exploration Stories!</h2>
           <p className="text-xl text-foreground/70">Real people that refined their ideas with AI and community feedback 🚀</p>
         </div>
         

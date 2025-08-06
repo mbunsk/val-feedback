@@ -258,104 +258,8 @@ function AdminDashboard() {
         </div>
 
 
-
-        {/* Validations Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lightbulb className="w-5 h-5" />
-              Idea Validations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {validationsLoading ? (
-              <div className="text-center py-8">Loading validations...</div>
-            ) : validations?.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No validations yet
-              </div>
-            ) : (
-              <>
-                <div className="space-y-4">
-                  {paginatedValidations.map((validation) => (
-                    <Card key={validation.id} className="border-l-4 border-l-yellow-500">
-                      <CardContent className="p-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                          <div className="space-y-3">
-                            <div className="flex items-start justify-between">
-                              <h3 className="text-lg font-semibold text-yellow-600">
-                                Idea Validation
-                              </h3>
-                              <Badge className="bg-yellow-500 text-white">
-                                Validation
-                              </Badge>
-                            </div>
-                            
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Calendar className="w-4 h-4" />
-                              <span>{formatDate(validation.createdAt)}</span>
-                            </div>
-
-                            {validation.user && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <User className="w-4 h-4" />
-                                <span>{validation.user.name}</span>
-                                <span>•</span>
-                                <span>{validation.user.email}</span>
-                              </div>
-                            )}
-
-                            <div>
-                              <h4 className="font-semibold mb-2">Idea:</h4>
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {validation.idea}
-                              </p>
-                            </div>
-
-                            <div>
-                              <h4 className="font-semibold mb-2">Target Customer:</h4>
-                              <p className="text-sm font-medium text-yellow-600 bg-yellow-50 p-2 rounded">
-                                {validation.targetCustomer}
-                              </p>
-                            </div>
-
-                            <div>
-                              <h4 className="font-semibold mb-2">Problem Solved:</h4>
-                              <p className="text-sm font-medium text-yellow-600 bg-yellow-50 p-2 rounded">
-                                {validation.problemSolved}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div>
-                              <h4 className="font-semibold mb-2">AI Feedback:</h4>
-                              <div 
-                                className="text-sm text-muted-foreground leading-relaxed max-h-64 overflow-y-auto"
-                                dangerouslySetInnerHTML={{ __html: validation.feedback }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-                
-                {totalValidationsPages > 1 && (
-                  <Pagination
-                    currentPage={validationsPage}
-                    totalPages={totalValidationsPages}
-                    onPageChange={setValidationsPage}
-                  />
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Submissions Section */}
-        <Card >
+        <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5" />
@@ -460,6 +364,102 @@ function AdminDashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Validations Section */}
+        <Card >
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lightbulb className="w-5 h-5" />
+              Idea Validations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {validationsLoading ? (
+              <div className="text-center py-8">Loading validations...</div>
+            ) : validations?.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No validations yet
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  {paginatedValidations.map((validation) => (
+                    <Card key={validation.id} className="border-l-4 border-l-yellow-500">
+                      <CardContent className="p-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          <div className="space-y-3">
+                            <div className="flex items-start justify-between">
+                              <h3 className="text-lg font-semibold text-yellow-600">
+                                Idea Validation
+                              </h3>
+                              <Badge className="bg-yellow-500 text-white">
+                                Validation
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="w-4 h-4" />
+                              <span>{formatDate(validation.createdAt)}</span>
+                            </div>
+
+                            {validation.user && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <User className="w-4 h-4" />
+                                <span>{validation.user.name}</span>
+                                <span>•</span>
+                                <span>{validation.user.email}</span>
+                              </div>
+                            )}
+
+                            <div>
+                              <h4 className="font-semibold mb-2">Idea:</h4>
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                {validation.idea}
+                              </p>
+                            </div>
+
+                            <div>
+                              <h4 className="font-semibold mb-2">Target Customer:</h4>
+                              <p className="text-sm font-medium text-yellow-600 bg-yellow-50 p-2 rounded">
+                                {validation.targetCustomer}
+                              </p>
+                            </div>
+
+                            <div>
+                              <h4 className="font-semibold mb-2">Problem Solved:</h4>
+                              <p className="text-sm font-medium text-yellow-600 bg-yellow-50 p-2 rounded">
+                                {validation.problemSolved}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <div>
+                              <h4 className="font-semibold mb-2">AI Feedback:</h4>
+                              <div 
+                                className="text-sm text-muted-foreground leading-relaxed max-h-64 overflow-y-auto"
+                                dangerouslySetInnerHTML={{ __html: validation.feedback }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                
+                {totalValidationsPages > 1 && (
+                  <Pagination
+                    currentPage={validationsPage}
+                    totalPages={totalValidationsPages}
+                    onPageChange={setValidationsPage}
+                  />
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
         
       </div>
     </div>
