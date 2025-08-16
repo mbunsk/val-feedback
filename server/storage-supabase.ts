@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { User, InsertUser, Validation, InsertValidation, Submission, InsertSubmission, AdminSession, InsertAdminSession } from "./supabase";
+import type { User, InsertUser, Validation, InsertValidation, Submission, InsertSubmission, AdminSession, InsertAdminSession, LinkClick, InsertLinkClick } from "./supabase";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -15,6 +15,8 @@ export interface IStorage {
   createAdminSession(insertSession: InsertAdminSession): Promise<AdminSession>;
   getAdminSession(id: string): Promise<AdminSession | undefined>;
   deleteExpiredAdminSessions(): Promise<void>;
+  trackLinkClick(company: string, linkType: string, url: string): Promise<void>;
+  getLinkClickStats(): Promise<LinkClick[]>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -272,6 +274,62 @@ export class SupabaseStorage implements IStorage {
       .lt('expires_at', now);
     
     if (error) throw new Error(`Failed to delete expired admin sessions: ${error.message}`);
+  }
+
+  async trackLinkClick(company: string, linkType: string, url: string): Promise<void> {
+    // Try to find existing record
+    const { data: existing } = await supabase
+      .from('link_clicks')
+      .select('*')
+      .eq('company', company)
+      .eq('link_type', linkType)
+      .single();
+
+    if (existing) {
+      // Update existing record
+      const { error } = await supabase
+        .from('link_clicks')
+        .update({
+          click_count: existing.click_count + 1,
+          last_clicked: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+      
+      if (error) throw new Error(`Failed to update link click: ${error.message}`);
+    } else {
+      // Create new record
+      const { error } = await supabase
+        .from('link_clicks')
+        .insert({
+          company,
+          link_type: linkType,
+          url,
+          click_count: 1,
+          last_clicked: new Date().toISOString()
+        });
+      
+      if (error) throw new Error(`Failed to create link click: ${error.message}`);
+    }
+  }
+
+  async getLinkClickStats(): Promise<LinkClick[]> {
+    const { data, error } = await supabase
+      .from('link_clicks')
+      .select('*')
+      .order('click_count', { ascending: false });
+    
+    if (error) throw new Error(`Failed to get link click stats: ${error.message}`);
+    
+    // Transform snake_case to camelCase for frontend compatibility
+    return (data || []).map((item: any) => ({
+      id: item.id,
+      company: item.company,
+      linkType: item.link_type,
+      url: item.url,
+      clickCount: item.click_count,
+      lastClicked: item.last_clicked,
+      createdAt: item.created_at
+    })) as unknown as LinkClick[];
   }
 }
 

@@ -74,4 +74,20 @@ export interface InsertSubmission {
 
 export interface InsertAdminSession {
   expires_at: string;
+}
+
+export interface LinkClick {
+  id: string;
+  company: string;
+  link_type: string;
+  url: string;
+  click_count: number;
+  last_clicked?: string;
+  created_at: string;
+}
+
+export interface InsertLinkClick {
+  company: string;
+  linkType: string;
+  url: string;
 } 

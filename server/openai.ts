@@ -6,7 +6,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export async function generateValidationFeedback(idea: string, targetCustomer: string, problemSolved: string) {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4",
       messages: [
         {
           role: "system",
@@ -176,7 +176,7 @@ Focus on understanding their specific pain points and engage authentically in th
 export async function generateLandingPagePrompt(idea: string, targetCustomer: string, problemSolved: string, validationFeedback: any) {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4",
       messages: [
         {
           role: "system",
@@ -282,5 +282,293 @@ Create an extremely detailed prompt that an AI site builder can use to generate 
 - Analytics and heat mapping integration
 
 Build this as a single-page application with smooth scrolling navigation and optimized for email conversion.`;
+  }
+}
+
+export async function generateCustomerPersonas(validationData: any, landingPageContent?: string) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert at creating realistic customer personas for startup validation. Generate 3 diverse, realistic potential customers with distinct backgrounds, pain points, and personalities. Use both the validation feedback and landing page content to create highly relevant personas.
+
+For each persona, include:
+- Detailed personality traits and communication style
+- Daily challenges and lifestyle context
+- Decision-making factors and buying motivations
+- Price sensitivity and budget considerations
+- How they currently solve this problem (if at all)
+
+Make each persona feel like a real person with authentic motivations, not generic customer archetypes. Focus on psychological depth and realistic business/personal contexts.
+
+Respond with a JSON array of 3 customer objects with these fields:
+{
+  "id": number,
+  "name": string,
+  "role": string, 
+  "background": string (2-3 sentences about their situation),
+  "avatar": string (single emoji that represents them),
+  "personality": string (communication style and traits),
+  "painPoints": array of strings (3-4 specific pain points),
+  "currentSolution": string (how they solve this now),
+  "priceWillingness": string (what they might pay and why)
+}`
+        },
+        {
+          role: "user",
+          content: `Create customer personas for this startup:
+
+**Validation Data:**
+- Idea: ${validationData.idea}
+- Target Customer: ${validationData.targetCustomer} 
+- Problem Solved: ${validationData.problemSolved}
+- AI Feedback: ${validationData.feedback}
+
+${landingPageContent ? `**Landing Page Context:**\n${landingPageContent.substring(0, 1000)}...` : ''}
+
+Create 3 diverse personas that represent different segments within the target customer base.`
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.8,
+      max_tokens: 2000
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || '{}');
+    return result.customers || result;
+  } catch (error) {
+    console.error("OpenAI customer personas error:", error);
+    return [
+      {
+        id: 1,
+        name: "Sarah Chen",
+        role: "Small Business Owner",
+        background: "Runs a local marketing agency with 5 employees. Always looking for tools to streamline operations and impress clients with innovative solutions.",
+        avatar: "👩‍💼",
+        personality: "Direct, results-oriented, skeptical of new tools but willing to try if ROI is clear. Values efficiency and proven solutions.",
+        painPoints: [
+          "Spends too much time on manual processes",
+          "Hard to differentiate from competitors", 
+          "Limited budget for expensive enterprise tools",
+          "Needs quick wins to show clients"
+        ],
+        currentSolution: "Uses basic tools and manual processes",
+        priceWillingness: "$50-200/month if it saves significant time"
+      },
+      {
+        id: 2,
+        name: "Mike Rodriguez", 
+        role: "Freelance Consultant",
+        background: "Independent consultant specializing in process optimization. Works with mid-size companies to improve their operations and reduce costs.",
+        avatar: "🧑‍💻",
+        personality: "Analytical, detail-oriented, price-conscious but understands value. Likes to test thoroughly before committing.",
+        painPoints: [
+          "Inconsistent client pipeline",
+          "Time-consuming client onboarding",
+          "Difficult to scale beyond personal capacity", 
+          "Needs professional-looking deliverables"
+        ],
+        currentSolution: "Combination of spreadsheets and basic software",
+        priceWillingness: "$25-100/month depending on client volume increase"
+      },
+      {
+        id: 3,
+        name: "Jennifer Park",
+        role: "Operations Manager",
+        background: "Works at a growing tech startup, responsible for internal processes and vendor relationships. Always under pressure to do more with less.",
+        avatar: "👩‍🔬", 
+        personality: "Collaborative, process-focused, budget-conscious but willing to invest in proven solutions. Values good support and onboarding.",
+        painPoints: [
+          "Limited budget approval authority",
+          "Needs buy-in from multiple stakeholders",
+          "Pressure to show measurable improvements",
+          "Concerned about team adoption and training"
+        ],
+        currentSolution: "Enterprise tools that are overkill or free tools that lack features",
+        priceWillingness: "$100-500/month if it solves a major pain point"
+      }
+    ];
+  }
+}
+
+export async function handleCustomerInterview(customerId: number, customerPersona: any, userQuestion: string, conversationHistory: any[], validationData: any) {
+  try {
+    console.log(`in handleCustomerInterview`);
+    
+    // Add null checks for customerPersona
+    if (!customerPersona) {
+      console.error("customerPersona is undefined or null");
+      return "I'm sorry, but I'm having trouble accessing the customer persona information. Could you please try again?";
+    }
+    
+    if (!customerPersona.name || !customerPersona.role) {
+      console.error("customerPersona missing required properties:", customerPersona);
+      return "I'm sorry, but the customer persona information is incomplete. Could you please try again?";
+    }
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are ${customerPersona.name}, a ${customerPersona.role}. 
+
+**Your Background:** ${customerPersona.background || 'Not specified'}
+**Your Personality:** ${customerPersona.personality || 'Professional and helpful'}  
+**Your Pain Points:** ${customerPersona.painPoints?.join(', ') || 'General business challenges'}
+**How You Currently Solve This:** ${customerPersona.currentSolution || 'Using existing tools and processes'}
+**Your Price Sensitivity:** ${customerPersona.priceWillingness || 'Moderate'}
+
+**The Startup Being Discussed:**
+- Idea: ${validationData?.idea || 'A new business solution'}
+- Target Customer: ${validationData?.targetCustomer || 'Business professionals'}
+- Problem It Solves: ${validationData?.problemSolved || 'Business efficiency'}
+
+You are being interviewed about this startup idea. Respond authentically as this persona:
+- Stay in character with your personality and communication style
+- Reference your specific pain points and current situation
+- Be honest about concerns, skepticism, or excitement 
+- Ask follow-up questions when curious
+- Share relevant experiences from your background
+- Give realistic feedback about pricing and adoption barriers
+- Don't just agree with everything - be genuinely helpful but honest
+
+Keep responses conversational (2-3 sentences usually), and make sure they feel authentic to your persona's voice and concerns.`
+        },
+        {
+          role: "user",
+          content: conversationHistory.length === 0 
+            ? `Hi ${customerPersona.name}! I'm working on ${validationData?.idea?.split(' ').slice(0, 6).join(' ') || 'a new solution'} and would love to get your perspective. I understand you're ${customerPersona.role.toLowerCase()} - what's your biggest challenge when it comes to ${validationData?.problemSolved?.toLowerCase() || 'business efficiency'}?`
+            : userQuestion
+        }
+      ],
+      temperature: 0.8,
+      max_tokens: 300
+    });
+
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error("OpenAI customer interview error:", error);
+    console.log(`error..: ${error}`);
+    return "I'm interested but need to think about this more. Can you tell me more about how this would work in practice?";
+  }
+}
+
+export async function generateStartupSimulation(validationData: any, customerInsights: any[] = [], landingPageContent?: string) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert startup advisor creating realistic 6-month journey simulations. Base your predictions on real market conditions, customer feedback patterns, and startup statistics. Be optimistic but realistic.
+
+Create a simulation with:
+- Month-by-month progression with realistic challenges
+- Revenue growth based on customer price feedback
+- User acquisition patterns typical for this market
+- Key decisions and milestones
+- Authentic startup challenges and wins
+
+Return exactly 6 months of data in the "simulation" array. Each month should have progressive growth and different challenges.`
+        },
+        {
+          role: "user",
+          content: `Generate a 6-month startup simulation for:
+
+**Startup Details:**
+- Idea: ${validationData.idea}
+- Target Customer: ${validationData.targetCustomer}
+- Problem Solved: ${validationData.problemSolved}
+
+**Customer Interview Insights:**
+${customerInsights.map((insight, i) => `
+Customer ${i+1} Insights:
+- Persona: ${insight.persona?.name} (${insight.persona?.role})
+- Price Willingness: ${insight.persona?.priceWillingness}
+- Key Concerns: ${insight.keyPoints?.join(', ') || 'General interest in solution'}
+`).join('')}
+
+${landingPageContent ? `**Landing Page Context:**\n${landingPageContent.substring(0, 800)}...` : ''}
+
+Create a realistic simulation with authentic challenges and revenue projections based on the customer price feedback.
+
+IMPORTANT: Return exactly 6 months of data in the "simulation" array. Each month should have progressive growth and different challenges.`
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+      max_tokens: 2500
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || '{}');
+    return result.simulation || result;
+  } catch (error) {
+    console.error("OpenAI startup simulation error:", error);
+    // Fallback with complete 6-month data structure
+    return [
+      {
+        month: 1,
+        title: "Launch & Initial Validation",
+        challenge: "You have $5,000 left in your budget and need to decide: spend it on marketing to get more users, or on product development to add the feature customers keep requesting. What's your choice and why?",
+        challenges: ["Product-market fit unclear", "Limited initial traction", "Budget constraints"],
+        wins: ["First paying customers", "Positive user feedback", "Working MVP"],
+        revenue: 1200,
+        users: 50,
+        keyDecisions: ["Pricing strategy", "Core feature prioritization", "Customer acquisition focus"]
+      },
+      {
+        month: 2,
+        title: "First Growth Sprint",
+        challenge: "A competitor just launched a very similar product with VC funding. They're offering it free for 6 months. How do you respond to protect your early customers and maintain momentum?",
+        challenges: ["Increased competition", "Customer retention concerns", "Limited marketing budget"],
+        wins: ["Word-of-mouth referrals starting", "Product improvements based on feedback", "First repeat customers"],
+        revenue: 2800,
+        users: 120,
+        keyDecisions: ["Competitive positioning", "Customer retention strategy", "Feature prioritization"]
+      },
+      {
+        month: 3,
+        title: "Market Expansion",
+        challenge: "You've validated your solution with early adopters, but now need to reach mainstream customers who are more skeptical. What changes to your messaging, pricing, or product would you make?",
+        challenges: ["Reaching mainstream market", "Scaling customer support", "Cash flow management"],
+        wins: ["Steady customer growth", "Improved conversion rates", "Team expansion"],
+        revenue: 4500,
+        users: 200,
+        keyDecisions: ["Market expansion strategy", "Hiring priorities", "Pricing adjustments"]
+      },
+      {
+        month: 4,
+        title: "Scaling Operations",
+        challenge: "Customer support tickets are overwhelming your small team, and response times are suffering. You could hire more support staff or invest in automation tools. What's your approach?",
+        challenges: ["Customer support bottlenecks", "Quality control issues", "Team burnout"],
+        wins: ["Established customer base", "Proven revenue model", "Strong customer feedback"],
+        revenue: 7200,
+        users: 320,
+        keyDecisions: ["Operational scaling", "Quality vs. speed trade-offs", "Investment priorities"]
+      },
+      {
+        month: 5,
+        title: "Strategic Decisions",
+        challenge: "An acquisition offer comes in for $500K, which would cover your team's salaries for 2 years but means giving up control. You also have interest from VCs. What path do you choose?",
+        challenges: ["Growth plateau", "Funding decisions", "Strategic direction"],
+        wins: ["Market recognition", "Strong unit economics", "Team stability"],
+        revenue: 9800,
+        users: 450,
+        keyDecisions: ["Funding strategy", "Growth vs. profitability", "Long-term vision"]
+      },
+      {
+        month: 6,
+        title: "Future Planning",
+        challenge: "You need to plan your next 6 months. Market research shows opportunity in 3 new segments, but you only have resources for one. How do you choose which market to pursue?",
+        challenges: ["Resource allocation", "Market prioritization", "Sustainable growth"],
+        wins: ["Profitable operations", "Strong market position", "Experienced team"],
+        revenue: 12500,
+        users: 580,
+        keyDecisions: ["Expansion strategy", "Resource management", "Long-term sustainability"]
+      }
+    ];
   }
 }

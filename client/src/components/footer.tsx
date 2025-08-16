@@ -4,8 +4,8 @@ import validatorIcon from "@assets/Validator AI Icon_1754233923589.png";
 
 export default function Footer() {
   return (
-    <footer id="about" className="bg-gradient-to-br from-primary/20 via-foreground to-accent/20 text-white py-16 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/90 to-indigo-900/90"></div>
+    <footer id="about" className="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-800 text-white py-16 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-800/95 to-slate-900/95"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

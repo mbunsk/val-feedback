@@ -6,7 +6,7 @@ import path from "path";
 import { storage } from "./storage-supabase";
 import { insertSubmissionSchema, insertValidationSchema } from "@shared/schema";
 import { z } from "zod";
-import { generateValidationFeedback, generateLandingPagePrompt } from "./openai";
+import { generateValidationFeedback, generateLandingPagePrompt, generateCustomerPersonas, handleCustomerInterview, generateStartupSimulation } from "./openai";
 import { requireAuth, optionalAuth, AuthenticatedRequest } from "./auth";
 import OpenAI from "openai";
 import { passport } from "./auth-config";
@@ -374,6 +374,133 @@ Create a landing page for this startup. The goal of the site is to highlight our
   app.post("/api/admin/logout", async (req, res) => {
     res.clearCookie('admin_session');
     res.json({ success: true });
+  });
+
+  // Track link clicks
+  app.post("/api/track-click", async (req, res) => {
+    try {
+      const { company, linkType, url } = req.body;
+      
+      if (!company || !linkType || !url) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      await storage.trackLinkClick(company, linkType, url);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Click tracking error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get link click stats (admin only)
+  app.get("/api/admin/link-stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getLinkClickStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Link stats error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Generate customer personas for startup simulator
+  app.post("/api/generate-customers", async (req, res) => {
+    const { validationData, landingPageContent } = req.body;
+    
+    try {
+      const customers = await generateCustomerPersonas(validationData, landingPageContent);
+      res.json({ customers });
+    } catch (error) {
+      console.error("Error generating customers:", error);
+      res.status(500).json({ message: "Failed to generate customer personas" });
+    }
+  });
+
+  // Handle customer interview chat
+  app.post("/api/customer-interview", async (req, res) => {
+    const { customerId, customerPersona, userQuestion, conversationHistory, validationData } = req.body;
+
+    try {
+      const response = await handleCustomerInterview(customerId, customerPersona, userQuestion, conversationHistory, validationData);
+      res.json({ response });
+    } catch (error) {
+      console.error("Error in customer interview:", error);
+      res.status(500).json({ message: "Failed to generate customer response" });
+    }
+  });
+
+  // Generate startup journey simulation
+  app.post("/api/generate-simulation", async (req, res) => {
+    const { validationData, customerInsights, landingPageContent } = req.body;
+
+    try {
+      const simulation = await generateStartupSimulation(validationData, customerInsights, landingPageContent);
+      res.json({ simulation });
+    } catch (error) {
+      console.error("Error generating simulation:", error);
+      res.status(500).json({ message: "Failed to generate startup simulation" });
+    }
+  });
+
+  // Generate simple 6-month simulation text file
+  app.post("/api/generate-simulation-roadmap", async (req, res) => {
+    try {
+      const { validationData, simulationData } = req.body;
+      
+      if (!validationData?.idea || !simulationData?.length) {
+        return res.status(400).json({ message: "Simulation data required" });
+      }
+
+      // Create clean text roadmap
+      let roadmapText = `6-MONTH STARTUP SIMULATION ROADMAP\n`;
+      roadmapText += `=========================================\n\n`;
+      roadmapText += `Startup Idea: ${validationData.idea}\n`;
+      roadmapText += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+      
+      simulationData.forEach((month, index) => {
+        roadmapText += `MONTH ${month.month}: ${month.title}\n`;
+        roadmapText += `${'='.repeat(40)}\n`;
+        roadmapText += `👥 Users: ${month.users?.toLocaleString() || 'N/A'}\n`;
+        if (month.revenue) {
+          roadmapText += `💰 Revenue: $${month.revenue.toLocaleString()}\n`;
+        }
+        roadmapText += `\n`;
+        
+        if (month.wins?.length > 0) {
+          roadmapText += `🎉 KEY WINS:\n`;
+          month.wins.forEach(win => {
+            roadmapText += `   • ${win}\n`;
+          });
+          roadmapText += `\n`;
+        }
+        
+        if (month.challenges?.length > 0) {
+          roadmapText += `⚠️  CHALLENGES:\n`;
+          month.challenges.forEach(challenge => {
+            roadmapText += `   • ${challenge}\n`;
+          });
+          roadmapText += `\n`;
+        }
+        
+        if (index < simulationData.length - 1) {
+          roadmapText += `${'-'.repeat(50)}\n\n`;
+        }
+      });
+      
+      roadmapText += `\n\nGenerated by ValidatorAI Platform\n`;
+      roadmapText += `For startup idea validation and simulation\n`;
+
+      const filename = `${validationData.idea.replace(/[^a-zA-Z0-9]/g, '_')}_6Month_Roadmap.txt`;
+
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      
+      res.send(roadmapText);
+    } catch (error) {
+      console.error("Simulation roadmap error:", error);
+      res.status(500).json({ message: "Failed to generate simulation roadmap" });
+    }
   });
 
   const httpServer = createServer(app);

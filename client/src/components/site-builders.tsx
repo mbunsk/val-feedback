@@ -78,6 +78,19 @@ export default function SiteBuilders({ validationData }: SiteBuildersProps) {
     }
   };
 
+  const trackLinkClick = async (company: string, linkType: string, url: string) => {
+    try {
+      await apiRequest("POST", "/api/track-click", {
+        company,
+        linkType,
+        url
+      });
+    } catch (error) {
+      // Silently fail - don't interrupt user experience
+      console.error("Failed to track link click:", error);
+    }
+  };
+
   const builders = [
     /*{
       name: "Base44",
@@ -217,6 +230,7 @@ export default function SiteBuilders({ validationData }: SiteBuildersProps) {
                   rel="noopener noreferrer"
                   className="block w-20 h-20 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 animate-bounce-gentle shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer" 
                   style={{animationDelay: `${index * 0.3}s`}}
+                  onClick={() => trackLinkClick(builder.name.toLowerCase(), 'logo', builder.url)}
                 >
                   <img 
                     src={
@@ -232,7 +246,13 @@ export default function SiteBuilders({ validationData }: SiteBuildersProps) {
                 <h3 className="text-2xl font-black text-foreground mb-3">{builder.name}</h3>
                 <p className="text-foreground/70 mb-6 text-lg">{builder.description}</p>
                 <Button asChild className={`w-full ${builder.color} transition-all duration-300 transform hover:scale-105 rounded-2xl py-6 text-lg font-bold shadow-lg hover:shadow-xl`}>
-                  <a href={builder.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center">
+                  <a 
+                    href={builder.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center justify-center"
+                    onClick={() => trackLinkClick(builder.name.toLowerCase(), 'button', builder.url)}
+                  >
                     <span className="mr-2">🎨</span>
                     Mock Up For Free
                     <ExternalLink className="ml-2 w-5 h-5" />

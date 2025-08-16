@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Calendar, Globe, User, FileText, ExternalLink, ChevronLeft, ChevronRight, Lightbulb } from "lucide-react";
+import { LogOut, Calendar, Globe, User, FileText, ExternalLink, ChevronLeft, ChevronRight, Lightbulb, MousePointer } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -131,6 +131,10 @@ function AdminDashboard() {
 
   const { data: validations, isLoading: validationsLoading } = useQuery<Validation[]>({
     queryKey: ["/api/admin/validations"],
+  });
+
+  const { data: linkStats, isLoading: linkStatsLoading } = useQuery<any[]>({
+    queryKey: ["/api/admin/link-stats"],
   });
 
   const logoutMutation = useMutation({
@@ -456,6 +460,51 @@ function AdminDashboard() {
                   />
                 )}
               </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Link Click Statistics */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MousePointer className="w-5 h-5" />
+              Link Click Statistics
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {linkStatsLoading ? (
+              <div className="text-center py-8">Loading link statistics...</div>
+            ) : linkStats?.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No link clicks tracked yet
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {linkStats?.map((stat) => (
+                  <Card key={stat.id} className="border-l-4 border-l-accent">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <h4 className="font-semibold capitalize">{stat.company}</h4>
+                            <p className="text-sm text-muted-foreground capitalize">{stat.linkType} link</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-accent">{stat.clickCount}</p>
+                          <p className="text-sm text-muted-foreground">clicks</p>
+                        </div>
+                      </div>
+                      {stat.lastClicked && (
+                        <div className="mt-2 text-sm text-muted-foreground">
+                          Last clicked: {formatDate(stat.lastClicked)}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </CardContent>
         </Card>
