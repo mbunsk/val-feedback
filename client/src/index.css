@@ -336,3 +336,12 @@
   color: hsl(var(--foreground));
   font-weight: 600;
 }
+
+/* Section visibility control based on validation state */
+.validation-complete .resouce-start {
+  display: none !important;
+}
+
+.validation-pending .resouces-result {
+  display: none !important;
+}

@@ -19,7 +19,7 @@ interface AuthContextType {
   user: AuthenticatedUser | null;
   loading: boolean;
   pendingValidation: ValidationFormData | null;
-  signIn: (formData?: ValidationFormData) => Promise<void>;
+  signIn: (formData?: ValidationFormData | { newsletterSignup: boolean }) => Promise<void>;
   signOut: () => Promise<void>;
   clearPendingValidation: () => void;
 }
@@ -55,6 +55,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.removeItem('pendingValidation');
           }
         }
+
+        // Check for newsletter signup if user just signed in
+        const newsletterSignup = localStorage.getItem('newsletterSignup');
+        if (newsletterSignup === 'true') {
+          console.log('User signed in for newsletter signup');
+          localStorage.removeItem('newsletterSignup');
+          // Trigger newsletter signup automatically
+          setTimeout(() => {
+            // Dispatch a custom event to trigger newsletter signup
+            window.dispatchEvent(new CustomEvent('newsletterSignupAfterAuth'));
+          }, 1000);
+        }
       } else {
         console.log('User not authenticated');
         setUser(null);
@@ -84,9 +96,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signIn = async (formData?: ValidationFormData) => {
+  const signIn = async (formData?: ValidationFormData | { newsletterSignup: boolean }) => {
     try {
-      if (formData) {
+      if (formData && 'newsletterSignup' in formData) {
+        // Newsletter signup flow
+        console.log('Setting newsletter signup flag');
+        localStorage.setItem('newsletterSignup', 'true');
+      } else if (formData) {
+        // Validation flow
         console.log('Setting pending validation:', formData);
         setPendingValidation(formData);
         // Store in localStorage to persist across OAuth redirect

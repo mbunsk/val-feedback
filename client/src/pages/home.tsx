@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/header";
 import Hero from "@/components/hero";
 import IdeaValidation from "@/components/idea-validation";
@@ -19,11 +19,31 @@ export default function Home() {
     feedback: string;
   } | undefined>();
 
+  const handleValidationStart = () => {
+    // Clear validation data to hide previous analysis and reset sections
+    setValidationData(undefined);
+  };
+
+  // Add CSS to hide/show sections based on validation state
+  useEffect(() => {
+    // Add/remove CSS classes to control section visibility
+    if (validationData) {
+      document.body.classList.add('validation-complete');
+      document.body.classList.remove('validation-pending');
+    } else {
+      document.body.classList.add('validation-pending');
+      document.body.classList.remove('validation-complete');
+    }
+  }, [validationData]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <Hero />
-      <IdeaValidation onValidationComplete={setValidationData} />
+      <IdeaValidation 
+        onValidationComplete={setValidationData} 
+        onValidationStart={handleValidationStart}
+      />
       <StartupResources validationData={validationData} />
       <StartupSimulator validationData={validationData} />
       

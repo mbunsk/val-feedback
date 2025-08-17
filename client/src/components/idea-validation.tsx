@@ -27,9 +27,10 @@ interface IdeaValidationProps {
     problemSolved: string;
     feedback: string;
   }) => void;
+  onValidationStart?: () => void;
 }
 
-export default function IdeaValidation({ onValidationComplete }: IdeaValidationProps) {
+export default function IdeaValidation({ onValidationComplete, onValidationStart }: IdeaValidationProps) {
   const [idea, setIdea] = useState("");
   const [targetCustomer, setTargetCustomer] = useState("");
   const [problemSolved, setProblemSolved] = useState("");
@@ -73,6 +74,11 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
     onSuccess: async (data) => {
       setValidationResult(data);
       
+      // Reset form fields after successful validation
+      setIdea("");
+      setTargetCustomer("");
+      setProblemSolved("");
+      
       // Pass validation data to parent component
       if (onValidationComplete) {
         onValidationComplete({
@@ -89,8 +95,8 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
           let firstName = '';
           let lastName = '';
           
-          if (user?.user_metadata?.full_name) {
-            const nameParts = user.user_metadata.full_name.split(' ');
+          if (user?.name) {
+            const nameParts = user.name.split(' ');
             firstName = nameParts[0] || '';
             lastName = nameParts.slice(1).join(' ') || '';
           } else {
@@ -205,6 +211,16 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
   }, [user, pendingValidation]);
 
   const handleValidation = async () => {
+    // If there's already a validation result and the form is empty, clear the result to allow new validation
+    if (validationResult && (!idea.trim() && !targetCustomer.trim() && !problemSolved.trim())) {
+      setValidationResult(null);
+      // Notify parent to clear validation data and reset sections
+      if (onValidationStart) {
+        onValidationStart();
+      }
+      return;
+    }
+
     if (!idea.trim() || !targetCustomer.trim() || !problemSolved.trim()) {
       toast({
         title: "Missing Information",
@@ -231,6 +247,12 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
     }
 
     // User is authenticated, proceed with validation
+    // Clear previous validation result and notify parent to reset sections
+    setValidationResult(null);
+    if (onValidationStart) {
+      onValidationStart();
+    }
+    
     validateMutation.mutate({ idea, targetCustomer, problemSolved });
   };
 
@@ -339,7 +361,17 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
               </div>
             </div>
             
-            <div className="mt-8 flex justify-center">
+            <div className="mt-8 flex flex-col items-center space-y-4">
+              {validationResult && (
+                <p className="text-sm text-foreground/60 text-center">
+                  💡 Fill in the form above with a new idea and click the button to get another analysis!
+                </p>
+              )}
+              {validateMutation.isPending && (
+                <p className="text-sm text-primary/80 text-center animate-pulse">
+                  🔄 Starting new analysis...
+                </p>
+              )}
               <Button id="validate-button" 
                 onClick={handleValidation}
                 disabled={validateMutation.isPending || authLoading}
@@ -349,11 +381,12 @@ export default function IdeaValidation({ onValidationComplete }: IdeaValidationP
                 {validateMutation.isPending && <Loader2 className="mr-3 h-6 w-6 animate-spin" />}
                 {authLoading && <Loader2 className="mr-3 h-6 w-6 animate-spin" />}
                 <span className="mr-2">
-                  {!user ? "🔐" : "🔬"}
+                  {!user ? "🔐" : validationResult ? "🔄" : "🔬"}
                 </span>
                 {validateMutation.isPending ? "AI analysis coming in 30 seconds..." : 
                  authLoading ? "Checking authentication..." :
-                 !user ? "Get AI Feedback!" : "Get AI Feedback!"}
+                 !user ? "Get AI Feedback!" : 
+                 validationResult ? "Validate New Idea!" : "Get AI Feedback!"}
                 {!validateMutation.isPending && !authLoading && <span className="ml-2">✨</span>}
               </Button>
             </div>

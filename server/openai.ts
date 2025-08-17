@@ -6,7 +6,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 export async function generateValidationFeedback(idea: string, targetCustomer: string, problemSolved: string) {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -176,7 +176,7 @@ Focus on understanding their specific pain points and engage authentically in th
 export async function generateLandingPagePrompt(idea: string, targetCustomer: string, problemSolved: string, validationFeedback: any) {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -288,7 +288,7 @@ Build this as a single-page application with smooth scrolling navigation and opt
 export async function generateCustomerPersonas(validationData: any, landingPageContent?: string) {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
@@ -344,7 +344,7 @@ Create 3 diverse personas that represent different segments within the target cu
       {
         id: 1,
         name: "Sarah Chen",
-        role: "Small Business Owner",
+        role: `Small Business Owner`,
         background: "Runs a local marketing agency with 5 employees. Always looking for tools to streamline operations and impress clients with innovative solutions.",
         avatar: "👩‍💼",
         personality: "Direct, results-oriented, skeptical of new tools but willing to try if ROI is clear. Values efficiency and proven solutions.",
@@ -409,7 +409,7 @@ export async function handleCustomerInterview(customerId: number, customerPerson
     }
     
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",

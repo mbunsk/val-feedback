@@ -37,7 +37,7 @@ export default function StartupResources({ validationData }: StartupResourcesPro
   // Show preview version if validation not complete
   if (!validationData) {
     return (
-      <section id="resources" className="py-20 bg-gradient-to-br from-accent/10 via-background to-primary/10 relative">
+      <section id="resources" className="resouce-start py-20 bg-gradient-to-br from-accent/10 via-background to-primary/10 relative">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 left-20 text-5xl opacity-20 animate-float">🚀</div>
           <div className="absolute bottom-20 right-20 text-4xl opacity-20 animate-bounce-gentle">💼</div>
@@ -179,7 +179,7 @@ export default function StartupResources({ validationData }: StartupResourcesPro
   ];
 
   return (
-    <section id="resources" className="py-20 bg-gradient-to-br from-accent/10 via-background to-primary/10 relative">
+    <section id="resources" className="resouces-result py-20 bg-gradient-to-br from-accent/10 via-background to-primary/10 relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-20 text-5xl opacity-20 animate-float">🚀</div>
         <div className="absolute bottom-20 right-20 text-4xl opacity-20 animate-bounce-gentle">💼</div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +61,24 @@ export default function StartupSimulator({ validationData }: StartupSimulatorPro
   const [valQuestion, setValQuestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  // Reset phase when validationData changes
+  useEffect(() => {
+    if (!validationData) {
+      setCurrentPhase('start');
+      setCustomers([]);
+      setActiveCustomer(null);
+      setMessages([]);
+      setCurrentQuestion("");
+      setInterviewsCompleted([]);
+      setSimulationData([]);
+      setChallengeResponses({});
+      setChallengeFeedback({});
+      setActiveValChat(null);
+      setValMessages({});
+      setValQuestion('');
+    }
+  }, [validationData]);
 
   const startSimulation = async () => {
     if (!validationData) {
@@ -454,8 +472,8 @@ export default function StartupSimulator({ validationData }: StartupSimulatorPro
           </div>
         )}
 
-        {currentPhase === 'interviews' && (
-          <div className="space-y-6">
+        {currentPhase === 'interviews' && validationData && (
+          <div className="simulation-box space-y-6">
             {/* Val's Instructions */}
             <div className="text-center">
               <div className="flex items-center justify-center space-x-4 mb-4">

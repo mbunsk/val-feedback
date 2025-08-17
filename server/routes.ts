@@ -406,7 +406,23 @@ Create a landing page for this startup. The goal of the site is to highlight our
 
   // Generate customer personas for startup simulator
   app.post("/api/generate-customers", async (req, res) => {
-    const { validationData, landingPageContent } = req.body;
+    // Handle both nested validationData and direct properties
+    let validationData = req.body.validationData;
+    const landingPageContent = req.body.landingPageContent;
+    
+    // If validationData is not provided, check if the properties are sent directly
+    if (!validationData && (req.body.idea || req.body.targetCustomer || req.body.problemSolved)) {
+      validationData = {
+        idea: req.body.idea,
+        targetCustomer: req.body.targetCustomer,
+        problemSolved: req.body.problemSolved,
+        feedback: req.body.feedback
+      };
+    }
+    
+    if (!validationData) {
+      return res.status(400).json({ message: "Validation data is required" });
+    }
     
     try {
       const customers = await generateCustomerPersonas(validationData, landingPageContent);
@@ -440,6 +456,70 @@ Create a landing page for this startup. The goal of the site is to highlight our
     } catch (error) {
       console.error("Error generating simulation:", error);
       res.status(500).json({ message: "Failed to generate startup simulation" });
+    }
+  });
+
+  // Insert to Beehiiv newsletter
+  app.post("/api/insert-to-beehive", requireAuth, async (req, res) => {
+    try {
+      const { email, firstName, lastName } = req.body;
+      
+      if (!email || !firstName || !lastName) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Convert PHP cURL to JavaScript fetch
+      const response = await fetch("https://api.beehiiv.com/v2/publications/pub_f0fb44c7-6963-454e-8fa0-477ec33c46cb/subscriptions", {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Authorization": "Bearer vjf5yOKUqj0MkFCRZwtPD65ktFOpWEnOIKejocqPdGTD49721SCijrS5UW1ibPuJ",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: email,
+          reactivate_existing: true,
+          send_welcome_email: true,
+          utm_source: 'validatorai',
+          utm_campaign: 'registration',
+          utm_medium: 'validatorai-registration',
+          referring_site: 'https://validatorai.com',
+          custom_fields: [
+            {
+              name: 'First Name',
+              value: firstName
+            },
+            {
+              name: 'Last Name',
+              value: lastName
+            }
+          ]
+        })
+      });
+
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        console.error("Beehiiv API error:", responseData);
+        return res.status(500).json({ message: "Failed to subscribe to newsletter" });
+      }
+
+      // Check if status is "validating" and trigger postback
+      if (responseData.data?.status === "validating") {
+        try {
+          await fetch('https://validatorai.com/postback/user_insert.php', {
+            method: 'GET'
+          });
+        } catch (postbackError) {
+          console.error("Postback error:", postbackError);
+          // Don't fail the main request if postback fails
+        }
+      }
+
+      res.json({ success: true, message: "Successfully subscribed to newsletter" });
+    } catch (error) {
+      console.error("Beehiiv subscription error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
