@@ -32,6 +32,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<LinkClick[]>([]);
   const [loadingStats, setLoadingStats] = useState(false);
+  const [validationCount, setValidationCount] = useState(0);
+  const [loadingValidationCount, setLoadingValidationCount] = useState(false);
   const { toast } = useToast();
 
   // Check if already logged in
@@ -45,6 +47,7 @@ export default function AdminPage() {
       if (response.ok) {
         setIsLoggedIn(true);
         fetchStats();
+        fetchValidationCount();
       }
     } catch (error) {
       // Not logged in, which is fine
@@ -66,6 +69,7 @@ export default function AdminPage() {
         setIsLoggedIn(true);
         setPassword("");
         fetchStats();
+        fetchValidationCount();
         toast({
           title: "Login successful",
           description: "Welcome to the admin dashboard",
@@ -104,6 +108,25 @@ export default function AdminPage() {
       });
     } finally {
       setLoadingStats(false);
+    }
+  };
+
+  const fetchValidationCount = async () => {
+    setLoadingValidationCount(true);
+    try {
+      const response = await fetch("/api/admin/validation-count");
+      if (response.ok) {
+        const data = await response.json();
+        setValidationCount(data.count);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch validation count",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingValidationCount(false);
     }
   };
 
@@ -185,7 +208,7 @@ export default function AdminPage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
@@ -225,6 +248,23 @@ export default function AdminPage() {
                   <p className="text-sm text-muted-foreground">Active Partners</p>
                   <p className="text-2xl font-bold">{companyStats.filter(s => s.totalClicks > 0).length}</p>
                   <p className="text-xs text-muted-foreground">of 6 partners</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Submissions</p>
+                  <p className="text-2xl font-bold">
+                    {loadingValidationCount ? "..." : validationCount}
+                  </p>
+                  <p className="text-xs text-muted-foreground">since Aug 17, 2025</p>
                 </div>
               </div>
             </CardContent>

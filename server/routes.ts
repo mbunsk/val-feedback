@@ -404,6 +404,17 @@ Create a landing page for this startup. The goal of the site is to highlight our
     }
   });
 
+  // Get validation count (admin only)
+  app.get("/api/admin/validation-count", requireAdmin, async (req, res) => {
+    try {
+      const count = await storage.getValidationCount();
+      res.json({ count });
+    } catch (error) {
+      console.error("Validation count error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Generate customer personas for startup simulator
   app.post("/api/generate-customers", async (req, res) => {
     // Handle both nested validationData and direct properties

@@ -63,9 +63,9 @@ export default function Hero() {
                 {/* Thought Bubble */}
                 <div className="relative">
                   <div className="bg-white rounded-xl p-3 shadow-lg border border-white/20 max-w-xs">
-                    <div className="text-xs text-gray-700 leading-tight">
+                  <div className="text-xs text-gray-700 leading-tight">
                       <span className="font-semibold text-primary">Val provides:</span> Market insights, 
-                      customer targeting, revenue ideas, and validation steps!
+                      customer conversation simulations, revenue ideas and key next steps!
                     </div>
                     
                     {/* Bubble tail */}

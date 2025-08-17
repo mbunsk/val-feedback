@@ -17,6 +17,7 @@ export interface IStorage {
   deleteExpiredAdminSessions(): Promise<void>;
   trackLinkClick(company: string, linkType: string, url: string): Promise<void>;
   getLinkClickStats(): Promise<LinkClick[]>;
+  getValidationCount(): Promise<number>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -330,6 +331,20 @@ export class SupabaseStorage implements IStorage {
       lastClicked: item.last_clicked,
       createdAt: item.created_at
     })) as unknown as LinkClick[];
+  }
+
+  async getValidationCount(): Promise<number> {
+    const { count, error } = await supabase
+      .from('validations')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', '2025-08-17');
+
+    if (error) {
+      console.error('Error fetching validation count:', error);
+      throw new Error('Failed to fetch validation count');
+    }
+
+    return count || 0;
   }
 }
 

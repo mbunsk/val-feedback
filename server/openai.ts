@@ -459,18 +459,32 @@ Keep responses conversational (2-3 sentences usually), and make sure they feel a
 export async function generateStartupSimulation(validationData: any, customerInsights: any[] = [], landingPageContent?: string) {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `You are an expert startup advisor creating realistic 6-month journey simulations. Base your predictions on real market conditions, customer feedback patterns, and startup statistics. Be optimistic but realistic.
+          content: `You are a startup simulation expert creating a realistic 6-month founder journey. Generate month-by-month scenarios with authentic challenges, wins, and growth metrics.
 
-Create a simulation with:
-- Month-by-month progression with realistic challenges
-- Revenue growth based on customer price feedback
-- User acquisition patterns typical for this market
-- Key decisions and milestones
-- Authentic startup challenges and wins
+For each month, include:
+- Realistic revenue based on actual pricing research and customer feedback
+- User growth that reflects typical startup traction patterns
+- ONE main interactive challenge that founders actually face in this industry
+- Meaningful wins and milestones
+- Key decisions that impact the business trajectory
+
+The interactive challenge should be:
+- Specific and actionable (not generic)
+- Something the entrepreneur needs to decide/solve
+- Realistic for that stage of business
+- Require strategic thinking
+
+Base revenue calculations on:
+- Customer interview insights about price willingness
+- Realistic conversion rates for the industry
+- Seasonal trends and market factors
+- Competitor pricing research
+
+Make this feel like a real startup journey with ups and downs, not just linear growth.
 
 IMPORTANT: You must respond with valid JSON format only. Return exactly 6 months of data in a "simulation" array. Each month should have progressive growth and different challenges.
 
@@ -481,11 +495,11 @@ Example JSON structure:
       "month": 1,
       "title": "Launch & Initial Validation",
       "challenge": "Your challenge question here",
-      "challenges": ["challenge1", "challenge2"],
-      "wins": ["win1", "win2"],
+      "challenges": ["challenge1", "challenge2", "challenge3"],
+      "wins": ["win1", "win2", "win3"],
       "revenue": 1200,
       "users": 50,
-      "keyDecisions": ["decision1", "decision2"]
+      "keyDecisions": ["decision1", "decision2", "decision3"]
     }
   ]
 }`

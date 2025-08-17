@@ -29,6 +29,13 @@ export default function Header() {
     setIsMobileMenuOpen(false);
   };
 
+  const goToHomeMain = () => {
+    
+    // Navigate to home page
+    window.location.href = 'https://validatorai.com/';
+  
+};
+  
   const handleLogout = async () => {
     try {
       await signOut();
@@ -48,15 +55,15 @@ export default function Header() {
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <button 
-                onClick={goToHome}
+               
                 className="flex items-center space-x-3 hover:opacity-80 transition-opacity duration-200"
               >
-                <img 
+                <img  onClick={goToHomeMain}
                   src={validatorIcon} 
                   alt="ValidatorAI Logo" 
                   className="w-12 h-12"
                 />
-                <span className="text-2xl font-black text-white">ValidatorAI</span>
+                <span onClick={goToHome} className="text-2xl font-black text-white">ValidatorAI</span>
               </button>
             </div>
           </div>
