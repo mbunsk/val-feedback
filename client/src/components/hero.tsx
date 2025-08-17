@@ -145,11 +145,11 @@ export default function Hero() {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-accent">1 min</div>
-              <div className="text-sm text-foreground/60">to mock up</div>
+              <div className="text-sm text-foreground/60">startup resources</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-pink-500">1 min</div>
-              <div className="text-sm text-foreground/60">for feedback</div>
+              <div className="text-2xl font-bold text-pink-500">2 min</div>
+              <div className="text-sm text-foreground/60">customer simulation</div>
             </div>
           </div>
         </div>

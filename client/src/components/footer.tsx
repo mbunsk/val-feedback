@@ -47,7 +47,7 @@ export default function Footer() {
             <h3 className="text-lg font-black text-white tracking-wider mb-6">🚀 Explore</h3>
             <ul className="space-y-4">
               <li><a href="/about" className="text-white/70 hover:text-white transition-all duration-300 transform hover:scale-105 hover:translate-x-2 text-lg">About</a></li>
-              <li><a href="#testimonials" className="text-white/70 hover:text-white transition-all duration-300 transform hover:scale-105 hover:translate-x-2 text-lg">Success Stories</a></li>
+              <li><a href="/#testimonials" className="text-white/70 hover:text-white transition-all duration-300 transform hover:scale-105 hover:translate-x-2 text-lg">Success Stories</a></li>
               <li><a href="/about#contact" className="text-white/70 hover:text-white transition-all duration-300 transform hover:scale-105 hover:translate-x-2 text-lg">Get in Touch</a></li>
             </ul>
           </div>

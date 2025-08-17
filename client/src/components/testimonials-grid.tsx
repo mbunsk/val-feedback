@@ -42,7 +42,7 @@ const testimonials = [
 
 export default function TestimonialsGrid() {
   return (
-    <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5 relative">
+    <section id="testimonials" className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5 relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-20 text-5xl opacity-20 animate-float">💬</div>
         <div className="absolute bottom-20 right-20 text-4xl opacity-20 animate-bounce-gentle">⭐</div>
