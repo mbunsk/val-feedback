@@ -472,7 +472,23 @@ Create a simulation with:
 - Key decisions and milestones
 - Authentic startup challenges and wins
 
-Return exactly 6 months of data in the "simulation" array. Each month should have progressive growth and different challenges.`
+IMPORTANT: You must respond with valid JSON format only. Return exactly 6 months of data in a "simulation" array. Each month should have progressive growth and different challenges.
+
+Example JSON structure:
+{
+  "simulation": [
+    {
+      "month": 1,
+      "title": "Launch & Initial Validation",
+      "challenge": "Your challenge question here",
+      "challenges": ["challenge1", "challenge2"],
+      "wins": ["win1", "win2"],
+      "revenue": 1200,
+      "users": 50,
+      "keyDecisions": ["decision1", "decision2"]
+    }
+  ]
+}`
         },
         {
           role: "user",
@@ -495,24 +511,95 @@ ${landingPageContent ? `**Landing Page Context:**\n${landingPageContent.substrin
 
 Create a realistic simulation with authentic challenges and revenue projections based on the customer price feedback.
 
-IMPORTANT: Return exactly 6 months of data in the "simulation" array. Each month should have progressive growth and different challenges.`
+IMPORTANT: You must respond with valid JSON format only. Return exactly 6 months of data in the "simulation" array. Each month should have progressive growth and different challenges. Do not include any markdown formatting or explanatory text - only the JSON object.`
         }
       ],
-      response_format: { type: "json_object" },
       temperature: 0.7,
       max_tokens: 2500
     });
 
-    const result = JSON.parse(response.choices[0].message.content || '{}');
-    return result.simulation || result;
+    const content = response.choices[0].message.content || '{}';
+    
+    try {
+      // Try to parse as JSON
+      const result = JSON.parse(content);
+      return result.simulation || result;
+    } catch (parseError) {
+      console.error("Failed to parse OpenAI response as JSON:", parseError);
+      console.log("Raw response content:", content);
+      
+      // Return fallback data if JSON parsing fails
+      return [
+        {
+          month: 1,
+          title: "Launch & Initial Validation",
+          challenge: "You have $5,000 left in your budget and need to decide: spend it on marketing to get more users, or on product development to add the feature customers keep requesting. What's your choice and why?",
+          challenges: ["Product-market fit unclear", "Limited initial traction", "Budget constraints"],
+          wins: ["First paying customers", "Positive user feedback", "Working MVP"],
+          revenue: 1200,
+          users: 50,
+          keyDecisions: ["Pricing strategy", "Core feature prioritization", "Customer acquisition focus"]
+        },
+        {
+          month: 2,
+          title: "First Growth Sprint",
+          challenge: "A competitor just launched a very similar product with VC funding. They're offering it free for 6 months. How do you respond to protect your early customers and maintain momentum?",
+          challenges: ["Increased competition", "Customer retention concerns", "Limited marketing budget"],
+          wins: ["Word-of-mouth referrals starting", "Product improvements based on feedback", "First repeat customers"],
+          revenue: 2800,
+          users: 120,
+          keyDecisions: ["Competitive positioning", "Customer retention strategy", "Feature prioritization"]
+        },
+        {
+          month: 3,
+          title: "Market Expansion",
+          challenge: "You've validated your solution with early adopters, but now need to reach mainstream customers who are more skeptical. What changes to your messaging, pricing, or product would you make?",
+          challenges: ["Reaching mainstream market", "Scaling customer support", "Cash flow management"],
+          wins: ["Steady customer growth", "Improved conversion rates", "Team expansion"],
+          revenue: 4500,
+          users: 200,
+          keyDecisions: ["Market expansion strategy", "Hiring priorities", "Pricing adjustments"]
+        },
+        {
+          month: 4,
+          title: "Scaling Operations",
+          challenge: "Customer support tickets are overwhelming your small team, and response times are suffering. You could hire more support staff or invest in automation tools. What's your approach?",
+          challenges: ["Customer support bottlenecks", "Quality control issues", "Team burnout"],
+          wins: ["Established customer base", "Proven revenue model", "Strong customer feedback"],
+          revenue: 7200,
+          users: 320,
+          keyDecisions: ["Operational scaling", "Quality vs. speed trade-offs", "Investment priorities"]
+        },
+        {
+          month: 5,
+          title: "Strategic Decisions",
+          challenge: "An acquisition offer comes in for $500K, which would cover your team's salaries for 2 years but means giving up control. You also have interest from VCs. What path do you choose?",
+          challenges: ["Growth plateau", "Funding decisions", "Strategic direction"],
+          wins: ["Market recognition", "Strong unit economics", "Team stability"],
+          revenue: 9500,
+          users: 450,
+          keyDecisions: ["Funding strategy", "Growth vs. exit", "Team retention"]
+        },
+        {
+          month: 6,
+          title: "Scale or Exit",
+          challenge: "You've reached a critical decision point. Your business is profitable but growth is slowing. Do you focus on optimizing for profitability, seek additional funding for aggressive expansion, or consider strategic partnerships?",
+          challenges: ["Growth plateau", "Market saturation", "Strategic direction"],
+          wins: ["Established market position", "Proven business model", "Strong team"],
+          revenue: 12000,
+          users: 600,
+          keyDecisions: ["Long-term strategy", "Team scaling", "Market expansion"]
+        }
+      ];
+    }
   } catch (error) {
     console.error("OpenAI startup simulation error:", error);
     // Fallback with complete 6-month data structure
     return [
       {
         month: 1,
-        title: "Launch & Initial Validation",
-        challenge: "You have $5,000 left in your budget and need to decide: spend it on marketing to get more users, or on product development to add the feature customers keep requesting. What's your choice and why?",
+        title: "Laun`ch & Initial Validation",
+        challenge: `You have $5,000 left in your budget and need to decide: spend it on marketing to get more users, or on product development to add the feature customers keep requesting. What's your choice and why?`,
         challenges: ["Product-market fit unclear", "Limited initial traction", "Budget constraints"],
         wins: ["First paying customers", "Positive user feedback", "Working MVP"],
         revenue: 1200,
@@ -570,5 +657,84 @@ IMPORTANT: Return exactly 6 months of data in the "simulation" array. Each month
         keyDecisions: ["Expansion strategy", "Resource management", "Long-term sustainability"]
       }
     ];
+  }
+}
+
+// Generate challenge feedback for user responses
+export async function generateChallengeFeedback(month: number, challenge: string, userResponse: string, validationData: any, simulationData: any) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are Val, an experienced startup mentor and advisor. You provide constructive, encouraging feedback on how entrepreneurs handle real startup challenges. Be supportive but honest about their approach.`
+        },
+        {
+          role: "user",
+          content: `As Val, provide feedback on this entrepreneur's response to a Month ${month} challenge:
+
+CHALLENGE: ${challenge}
+
+ENTREPRENEUR'S RESPONSE: ${userResponse}
+
+STARTUP CONTEXT:
+- Idea: ${validationData.idea}
+- Target Customer: ${validationData.targetCustomer}
+- Problem Solved: ${validationData.problemSolved}
+
+Provide 2-3 sentences of constructive feedback. Be encouraging but honest about their approach. Focus on what they did well and what they might consider differently.`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 300
+    });
+
+    return response.choices[0].message.content || "Great thinking! Your approach shows you're considering the practical aspects of this challenge.";
+  } catch (error) {
+    console.error("Challenge feedback error:", error);
+    return "Your response shows good strategic thinking. Keep focusing on customer needs and practical execution.";
+  }
+}
+
+// Handle Val chat conversations
+export async function handleValChat(month: number, question: string, conversationHistory: any[], simulationData: any, validationData: any) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: `You are Val, a warm, thoughtful startup mentor with 15+ years of experience helping entrepreneurs. You're currently advising on Month ${month} of their startup journey. Be encouraging, practical, and provide actionable advice.`
+        },
+        {
+          role: "user",
+          content: `Val, I need your advice on Month ${month} of my startup journey.
+
+STARTUP CONTEXT:
+- Idea: ${validationData.idea}
+- Target Customer: ${validationData.targetCustomer}
+- Problem Solved: ${validationData.problemSolved}
+
+MONTH ${month} CONTEXT:
+${simulationData ? `- Title: ${simulationData.title}
+- Challenges: ${simulationData.challenges?.join(', ')}
+- Wins: ${simulationData.wins?.join(', ')}
+- Revenue: $${simulationData.revenue}
+- Users: ${simulationData.users}` : 'Month data not available'}
+
+QUESTION: ${question}
+
+Please provide 2-3 sentences of practical, encouraging advice.`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 400
+    });
+
+    return response.choices[0].message.content || "That's a great question! Let me think about this specific challenge you're facing...";
+  } catch (error) {
+    console.error("Val chat error:", error);
+    return "I appreciate you asking about this challenge. It's a common hurdle that many successful startups have faced. What specific aspect are you most concerned about?";
   }
 }

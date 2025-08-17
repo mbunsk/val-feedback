@@ -289,7 +289,7 @@ export default function IdeaValidation({ onValidationComplete, onValidationStart
             What's Your Wild Idea? <span className="text-5xl emoji">🤔</span>
           </h2>
           <p className="text-xl text-foreground/70 leading-relaxed">
-            Share any idea and our AI will give you thoughtful feedback, insights, and suggestions to explore it further!
+            Share any idea and our AI will give you thoughtful feedback, the ability to refine your idea with customer conversations and a simulation of what a lunch might look like - with an AI copilot!
             <br />
             <span className="text-primary font-semibold">No pressure, just fun exploration! ✨</span>
           </p>

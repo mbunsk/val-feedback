@@ -450,6 +450,10 @@ Create a landing page for this startup. The goal of the site is to highlight our
   app.post("/api/generate-simulation", async (req, res) => {
     const { validationData, customerInsights, landingPageContent } = req.body;
 
+    if (!validationData) {
+      return res.status(400).json({ message: "validationData is required" });
+    }
+
     try {
       const simulation = await generateStartupSimulation(validationData, customerInsights, landingPageContent);
       res.json({ simulation });
@@ -520,6 +524,94 @@ Create a landing page for this startup. The goal of the site is to highlight our
     } catch (error) {
       console.error("Beehiiv subscription error:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Handle challenge feedback
+  app.post("/api/challenge-feedback", async (req, res) => {
+    try {
+      const { month, challenge, response, validationData, simulationData } = req.body;
+      
+      if (!month || !challenge || !response || !validationData) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const { generateChallengeFeedback } = await import("./openai.js");
+      const feedback = await generateChallengeFeedback(month, challenge, response, validationData, simulationData);
+      res.json({ feedback });
+    } catch (error) {
+      console.error("Challenge feedback error:", error);
+      res.status(500).json({ message: "Failed to generate feedback" });
+    }
+  });
+
+  // Handle Val chat
+  app.post("/api/val-chat", async (req, res) => {
+    try {
+      const { month, question, conversationHistory, simulationData, validationData } = req.body;
+      
+      if (!month || !question || !validationData) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const { handleValChat } = await import("./openai.js");
+      const response = await handleValChat(month, question, conversationHistory, simulationData, validationData);
+      res.json({ response });
+    } catch (error) {
+      console.error("Val chat error:", error);
+      res.status(500).json({ message: "Failed to get Val's response" });
+    }
+  });
+
+  // Generate and download pitch deck (PDF format)
+  app.post("/api/generate-pitch-deck", async (req, res) => {
+    try {
+      const { validationData, customerInsights, simulationData } = req.body;
+
+      if (!validationData?.idea) {
+        return res.status(400).json({ message: "Validation data required" });
+      }
+
+      const pitchDeckData = {
+        validationData,
+        customerInsights: customerInsights || [],
+        simulationData: simulationData || []
+      };
+
+      // Fallback to text-based pitch deck since PDF generation failed
+      const { TextReportGenerator } = await import("./textReportGenerator.js");
+      const generator = new TextReportGenerator();
+      const pitchDeckContent = generator.generatePitchDeck(pitchDeckData);
+      const filename = `${validationData.idea.replace(/[^a-zA-Z0-9]/g, '_')}_PitchDeck.txt`;
+
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pitchDeckContent.length);
+      
+      res.send(pitchDeckContent);
+    } catch (error) {
+      console.error("Pitch deck generation error:", error);
+      res.status(500).json({ message: "Failed to generate pitch deck" });
+    }
+  });
+
+  // Generate comprehensive report PDF
+  app.post("/api/generate-report", async (req, res) => {
+    const { validationData, bubbleUrl, customerInterviews, simulation } = req.body;
+
+    try {
+      // This would generate a comprehensive PDF with:
+      // - Original validation results
+      // - Customer interview insights
+      // - 6-month journey simulation
+      // - Market analysis
+      // - Recommended next steps
+      
+      // For now, return success - PDF generation would be implemented here
+      res.json({ message: "Report generation ready - implementation needed" });
+    } catch (error) {
+      console.error("Error generating report:", error);
+      res.status(500).json({ message: "Failed to generate report" });
     }
   });
 

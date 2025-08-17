@@ -819,8 +819,9 @@ export default function StartupSimulator({ validationData }: StartupSimulatorPro
                       className="flex-shrink-0"
                     >
                       <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg p-2 hover:shadow-xl transition-all duration-300 transform hover:scale-110 cursor-pointer">
-                        <img 
-                          alt="Bubble logo"
+                      <img 
+                          src="/attached_assets/bubble-icon-logo-png_seeklogo-448116_1754234608565.png"
+                          alt="Gamma logo"
                           className="max-w-full max-h-full object-contain"
                         />
                       </div>

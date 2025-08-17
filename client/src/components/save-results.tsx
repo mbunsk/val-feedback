@@ -243,7 +243,7 @@ export default function SaveResults({ validationData }: SaveResultsProps) {
         </div>
         
         {/* Encouragement section */}
-        <div className="mt-8 text-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl border border-primary/20">
+        <div style={{ display: 'none' }}   className="mt-8 text-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl border border-primary/20">
           <div className="mb-4"></div>
           <div className="mb-4"></div>
           <p className="text-foreground/80 text-lg mb-2">
