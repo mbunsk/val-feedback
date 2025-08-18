@@ -33,7 +33,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="pt-8 pb-20 bg-gradient-to-br from-background via-primary/10 via-accent/15 to-secondary/25 relative overflow-hidden">
+    <section className="pt-8 bg-gradient-to-br from-background via-primary/10 via-accent/15 to-secondary/25 relative overflow-hidden">
       {/* Floating decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-20 h-20 bg-primary/20 rounded-full blur-xl animate-float"></div>
@@ -128,7 +128,7 @@ export default function Hero() {
           <p className="text-xl sm:text-2xl text-foreground/70 mb-8 max-w-4xl mx-auto leading-relaxed">
             Get instant <strong className="text-white dark:text-white">AI validation</strong>, <strong className="text-white dark:text-white">startup resources</strong>, chat with <strong className="text-white dark:text-white">AI-customer personas</strong> and complete a <strong className="text-white dark:text-white">6 challenge launch simulation</strong>. <strong className="text-white dark:text-white">ALL FREE!</strong>
           </p>
-          <Button 
+          <Button style={{display: 'none'}}
             onClick={scrollToValidation}
             size="lg"
             className="inline-flex items-center px-10 py-5 text-xl font-bold rounded-2xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 transform hover:scale-110 bg-gradient-to-r from-primary via-accent to-primary hover:from-accent hover:via-primary hover:to-accent animate-pulse-slow"
@@ -138,7 +138,7 @@ export default function Hero() {
             <ArrowRight className="ml-3 w-6 h-6 animate-bounce-gentle" />
           </Button>
           
-          <div className="mt-8 flex justify-center space-x-8">
+          <div style={{display: 'none'}} className="mt-8 flex justify-center space-x-8">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">30 sec</div>
               <div className="text-sm text-foreground/60">to explore</div>

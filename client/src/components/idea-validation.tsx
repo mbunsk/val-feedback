@@ -271,7 +271,7 @@ export default function IdeaValidation({ onValidationComplete, onValidationStart
   };
 
   return (
-    <section id="validate" className="py-20 bg-gradient-to-br from-accent/15 to-background relative">
+    <section id="validate" className="py-20 pt-0 bg-gradient-to-br from-accent/15 to-background relative">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 right-10 text-6xl opacity-20 animate-float">💡</div>
         <div className="absolute bottom-10 left-10 text-4xl opacity-20 animate-bounce-gentle">🚀</div>
@@ -285,10 +285,10 @@ export default function IdeaValidation({ onValidationComplete, onValidationStart
             </span>
             🎯 Idea Validation Lab
           </Badge>
-          <h2 className="text-3xl sm:text-5xl font-black mb-6 gradient-text">
+          <h2 style={{display: 'none'}} className="text-3xl sm:text-5xl font-black mb-6 gradient-text">
             What's Your Wild Idea? <span className="text-5xl emoji">🤔</span>
           </h2>
-          <p className="text-xl text-foreground/70 leading-relaxed">
+          <p  style={{display: 'none'}} className="text-xl text-foreground/70 leading-relaxed">
             Share any idea and our AI will give you thoughtful feedback, the ability to refine your idea with customer conversations and a simulation of what a launch might look like - with an AI copilot!
             <br />
             <span className="text-primary font-semibold">No pressure, just fun exploration! ✨</span>
