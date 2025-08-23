@@ -82,6 +82,23 @@ async function setupDatabase() {
       );
     `;
 
+    // Create simulation_sessions table
+    await sql`
+      CREATE TABLE IF NOT EXISTS simulation_sessions (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id VARCHAR REFERENCES users(id),
+        validation_id VARCHAR REFERENCES validations(id),
+        idea TEXT NOT NULL,
+        target_customer TEXT NOT NULL,
+        problem_solved TEXT NOT NULL,
+        customer_personas TEXT,
+        conversation_history TEXT,
+        simulation_data TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `;
+
     console.log('✅ Database tables created successfully!');
     
     // Create indexes for better performance
@@ -96,6 +113,8 @@ async function setupDatabase() {
     await sql`CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires_at ON admin_sessions(expires_at);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_link_clicks_company_type ON link_clicks(company, link_type);`;
     await sql`CREATE INDEX IF NOT EXISTS idx_link_clicks_click_count ON link_clicks(click_count DESC);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_simulation_sessions_user_id ON simulation_sessions(user_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_simulation_sessions_created_at ON simulation_sessions(created_at DESC);`;
     
     console.log('✅ Indexes created successfully!');
     
@@ -106,6 +125,7 @@ async function setupDatabase() {
     console.log('- validations');
     console.log('- admin_sessions');
     console.log('- link_clicks');
+    console.log('- simulation_sessions');
     
   } catch (error) {
     console.error('❌ Error setting up database:', error);

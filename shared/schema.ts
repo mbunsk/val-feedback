@@ -51,6 +51,20 @@ export const linkClicks = pgTable("link_clicks", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const simulationSessions = pgTable("simulation_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  validationId: varchar("validation_id").references(() => validations.id),
+  idea: text("idea").notNull(),
+  targetCustomer: text("target_customer").notNull(),
+  problemSolved: text("problem_solved").notNull(),
+  customerPersonas: text("customer_personas"), // JSON string of customer personas
+  conversationHistory: text("conversation_history"), // JSON string of chat messages
+  simulationData: text("simulation_data"), // JSON string of simulation phases
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -79,6 +93,12 @@ export const insertLinkClickSchema = createInsertSchema(linkClicks).omit({
   lastClicked: true,
 });
 
+export const insertSimulationSessionSchema = createInsertSchema(simulationSessions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertSubmission = z.infer<typeof insertSubmissionSchema>;
@@ -95,3 +115,12 @@ export type InsertAdminSession = z.infer<typeof insertAdminSessionSchema>;
 export type AdminSession = typeof adminSessions.$inferSelect;
 export type InsertLinkClick = z.infer<typeof insertLinkClickSchema>;
 export type LinkClick = typeof linkClicks.$inferSelect;
+export type InsertSimulationSession = z.infer<typeof insertSimulationSessionSchema>;
+export type SimulationSession = typeof simulationSessions.$inferSelect & {
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+  } | null;
+  validation?: Validation | null;
+};

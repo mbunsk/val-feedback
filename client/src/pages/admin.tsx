@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ExternalLink, BarChart3, Clock, TrendingUp } from "lucide-react";
+import { ExternalLink, BarChart3, Clock, TrendingUp, MessageCircle, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface LinkClick {
   id: string;
@@ -26,6 +27,37 @@ interface CompanyStats {
   lastClicked?: string;
 }
 
+interface SimulationSession {
+  id: string;
+  idea: string;
+  targetCustomer: string;
+  problemSolved: string;
+  customerPersonas: any[];
+  conversationHistory: any[];
+  simulationData: any[];
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+  validation?: {
+    id: string;
+    feedback: string;
+  } | null;
+}
+
+interface SimulationSessionsResponse {
+  sessions: SimulationSession[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
@@ -34,6 +66,16 @@ export default function AdminPage() {
   const [loadingStats, setLoadingStats] = useState(false);
   const [validationCount, setValidationCount] = useState(0);
   const [loadingValidationCount, setLoadingValidationCount] = useState(false);
+  const [simulationSessions, setSimulationSessions] = useState<SimulationSession[]>([]);
+  const [loadingSimulationSessions, setLoadingSimulationSessions] = useState(false);
+  const [simulationPagination, setSimulationPagination] = useState({
+    page: 1,
+    pageSize: 10,
+    total: 0,
+    totalPages: 0
+  });
+  const [selectedSession, setSelectedSession] = useState<SimulationSession | null>(null);
+  const [showChatDialog, setShowChatDialog] = useState(false);
   const { toast } = useToast();
 
   // Check if already logged in
@@ -48,6 +90,7 @@ export default function AdminPage() {
         setIsLoggedIn(true);
         fetchStats();
         fetchValidationCount();
+        fetchSimulationSessions();
       }
     } catch (error) {
       // Not logged in, which is fine
@@ -127,6 +170,26 @@ export default function AdminPage() {
       });
     } finally {
       setLoadingValidationCount(false);
+    }
+  };
+
+  const fetchSimulationSessions = async (page: number = 1) => {
+    setLoadingSimulationSessions(true);
+    try {
+      const response = await fetch(`/api/admin/simulation-sessions?page=${page}&pageSize=10`);
+      if (response.ok) {
+        const data: SimulationSessionsResponse = await response.json();
+        setSimulationSessions(data.sessions);
+        setSimulationPagination(data.pagination);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch simulation sessions",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingSimulationSessions(false);
     }
   };
 
@@ -356,6 +419,202 @@ export default function AdminPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Simulation Sessions */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5" />
+              Simulation Sessions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingSimulationSessions ? (
+              <div className="text-center py-8">
+                <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p className="text-muted-foreground">Loading simulation sessions...</p>
+              </div>
+            ) : simulationSessions.length > 0 ? (
+              <div className="space-y-4">
+                {simulationSessions.map((session) => (
+                  <div 
+                    key={session.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-2">
+                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-full font-bold">
+                          <Users className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg truncate max-w-md">{session.idea}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {session.user?.name || 'Anonymous'} • {new Date(session.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="ml-14">
+                        <p className="text-sm text-muted-foreground mb-1">
+                          <strong>Target:</strong> {session.targetCustomer}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Problem:</strong> {session.problemSolved.substring(0, 100)}...
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <Badge variant="secondary" className="mb-1">
+                          Customers
+                        </Badge>
+                        <p className="text-lg font-bold text-blue-600">
+                          {session.customerPersonas?.length || 0}
+                        </p>
+                      </div>
+
+                      <div className="text-center">
+                        <Badge variant="secondary" className="mb-1">
+                          Messages
+                        </Badge>
+                        <p className="text-lg font-bold text-green-600">
+                          {session.conversationHistory?.length || 0}
+                        </p>
+                      </div>
+
+                      <Button
+                        onClick={() => {
+                          setSelectedSession(session);
+                          setShowChatDialog(true);
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        View Chat
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Pagination */}
+                {simulationPagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-6">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {((simulationPagination.page - 1) * simulationPagination.pageSize) + 1} to{' '}
+                      {Math.min(simulationPagination.page * simulationPagination.pageSize, simulationPagination.total)} of{' '}
+                      {simulationPagination.total} sessions
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchSimulationSessions(simulationPagination.page - 1)}
+                        disabled={simulationPagination.page <= 1}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Previous
+                      </Button>
+                      <span className="text-sm">
+                        Page {simulationPagination.page} of {simulationPagination.totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchSimulationSessions(simulationPagination.page + 1)}
+                        disabled={simulationPagination.page >= simulationPagination.totalPages}
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No simulation sessions found.</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Sessions will appear here once users start customer conversations.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Chat Dialog */}
+        <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Customer Conversation</DialogTitle>
+            </DialogHeader>
+            {selectedSession && (
+              <div className="space-y-4">
+                <div className="bg-muted p-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">Startup Idea</h3>
+                  <p className="text-sm">{selectedSession.idea}</p>
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    <p><strong>Target Customer:</strong> {selectedSession.targetCustomer}</p>
+                    <p><strong>Problem Solved:</strong> {selectedSession.problemSolved}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Customer Personas</h4>
+                  {selectedSession.customerPersonas?.map((persona, index) => (
+                    <div key={index} className="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg">
+                      <p className="font-medium">{persona.name} - {persona.role}</p>
+                      <p className="text-sm text-muted-foreground">{persona.background}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-4 text-black">
+                  <h4 className="font-semibold">Conversation History</h4>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {selectedSession.conversationHistory?.map((message, index) => (
+                      <div 
+                        key={index} 
+                        className={`p-3 rounded-lg ${
+                          message.isUser 
+                            ? 'bg-blue-100 dark:bg-blue-900/30 ml-8' 
+                            : 'bg-gray-100 dark:bg-gray-800 mr-8'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-medium">
+                            {message.isUser ? 'User' : `Customer ${message.customerId}`}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(message.timestamp).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-sm">{message.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {selectedSession.simulationData && selectedSession.simulationData.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Simulation Data</h4>
+                    <div className="space-y-2">
+                      {selectedSession.simulationData.map((month, index) => (
+                        <div key={index} className="bg-green-50 dark:bg-green-950/30 p-3 rounded-lg">
+                          <p className="font-medium">Month {month.month}: {month.title}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Revenue: ${month.revenue} | Users: {month.users}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -4,13 +4,15 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import { storage } from "./storage-supabase";
-import { insertSubmissionSchema, insertValidationSchema } from "@shared/schema";
+import { insertSubmissionSchema, insertValidationSchema, validations, submissions, users, linkClicks, simulationSessions } from "@shared/schema";
 import { z } from "zod";
 import { generateValidationFeedback, generateLandingPagePrompt, generateCustomerPersonas, handleCustomerInterview, generateStartupSimulation } from "./openai";
 import { requireAuth, optionalAuth, AuthenticatedRequest } from "./auth";
 import OpenAI from "openai";
 import { passport } from "./auth-config";
 import session from "express-session";
+import { db } from "./db";
+import { eq, desc, sql } from "drizzle-orm";
 
 // Validate that OpenAI API key is present
 if (!process.env.OPENAI_API_KEY) {
@@ -450,6 +452,73 @@ Create a landing page for this startup. The goal of the site is to highlight our
 
     try {
       const response = await handleCustomerInterview(customerId, customerPersona, userQuestion, conversationHistory, validationData);
+      
+      // Save or update simulation session
+      if (validationData && conversationHistory) {
+        try {
+          // Import supabase client
+          const { supabase } = await import('./supabase');
+          
+          // Get user ID from the request if available
+          const userId = req.user?.id || null;
+          
+          // Check if session already exists for this user and validation
+          const { data: existingSession } = await supabase
+            .from('simulation_sessions')
+            .select('*')
+            .eq('user_id', userId || '')
+            .eq('idea', validationData.idea)
+            .single();
+
+          // Add the new message to conversation history
+          const updatedConversationHistory = [
+            ...conversationHistory,
+            {
+              id: conversationHistory.length + 1,
+              customerId: customerId,
+              isUser: true,
+              text: userQuestion,
+              timestamp: new Date()
+            },
+            {
+              id: conversationHistory.length + 2,
+              customerId: customerId,
+              isUser: false,
+              text: response,
+              timestamp: new Date()
+            }
+          ];
+
+          if (existingSession) {
+            // Update existing session
+            await supabase
+              .from('simulation_sessions')
+              .update({
+                conversation_history: JSON.stringify(updatedConversationHistory),
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingSession.id);
+          } else {
+            // Create new session
+            await supabase
+              .from('simulation_sessions')
+              .insert({
+                user_id: userId,
+                validation_id: null,
+                idea: validationData.idea,
+                target_customer: validationData.targetCustomer,
+                problem_solved: validationData.problemSolved,
+                customer_personas: null, // Will be updated when simulation starts
+                conversation_history: JSON.stringify(updatedConversationHistory),
+                simulation_data: null // Will be updated when simulation starts
+              });
+          }
+        } catch (sessionError) {
+          console.error("Error saving simulation session:", sessionError);
+          // Don't fail the main request if session saving fails
+        }
+      }
+      
       res.json({ response });
     } catch (error) {
       console.error("Error in customer interview:", error);
@@ -467,6 +536,54 @@ Create a landing page for this startup. The goal of the site is to highlight our
 
     try {
       const simulation = await generateStartupSimulation(validationData, customerInsights, landingPageContent);
+      
+      // Save simulation data to database
+      if (validationData) {
+        try {
+          // Import supabase client
+          const { supabase } = await import('./supabase');
+          
+          // Get user ID from the request if available
+          const userId = req.user?.id || null;
+          
+          // Check if session already exists for this user and validation
+          const { data: existingSession } = await supabase
+            .from('simulation_sessions')
+            .select('*')
+            .eq('user_id', userId || '')
+            .eq('idea', validationData.idea)
+            .single();
+
+          if (existingSession) {
+            // Update existing session with simulation data
+            await supabase
+              .from('simulation_sessions')
+              .update({
+                simulation_data: JSON.stringify(simulation),
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', existingSession.id);
+          } else {
+            // Create new session with simulation data
+            await supabase
+              .from('simulation_sessions')
+              .insert({
+                user_id: userId,
+                validation_id: null,
+                idea: validationData.idea,
+                target_customer: validationData.targetCustomer,
+                problem_solved: validationData.problemSolved,
+                customer_personas: customerInsights ? JSON.stringify(customerInsights.map(insight => insight.persona)) : null,
+                conversation_history: null,
+                simulation_data: JSON.stringify(simulation)
+              });
+          }
+        } catch (sessionError) {
+          console.error("Error saving simulation data:", sessionError);
+          // Don't fail the main request if session saving fails
+        }
+      }
+      
       res.json({ simulation });
     } catch (error) {
       console.error("Error generating simulation:", error);
@@ -635,54 +752,153 @@ Create a landing page for this startup. The goal of the site is to highlight our
         return res.status(400).json({ message: "Simulation data required" });
       }
 
-      // Create clean text roadmap
       let roadmapText = `6-MONTH STARTUP SIMULATION ROADMAP\n`;
-      roadmapText += `=========================================\n\n`;
-      roadmapText += `Startup Idea: ${validationData.idea}\n`;
-      roadmapText += `Generated: ${new Date().toLocaleDateString()}\n\n`;
-      
+      roadmapText += `Generated for: ${validationData.idea}\n`;
+      roadmapText += `Target Customer: ${validationData.targetCustomer}\n`;
+      roadmapText += `Problem Solved: ${validationData.problemSolved}\n\n`;
+
       simulationData.forEach((month, index) => {
         roadmapText += `MONTH ${month.month}: ${month.title}\n`;
-        roadmapText += `${'='.repeat(40)}\n`;
-        roadmapText += `👥 Users: ${month.users?.toLocaleString() || 'N/A'}\n`;
-        if (month.revenue) {
-          roadmapText += `💰 Revenue: $${month.revenue.toLocaleString()}\n`;
-        }
-        roadmapText += `\n`;
-        
-        if (month.wins?.length > 0) {
-          roadmapText += `🎉 KEY WINS:\n`;
-          month.wins.forEach(win => {
-            roadmapText += `   • ${win}\n`;
-          });
-          roadmapText += `\n`;
-        }
-        
-        if (month.challenges?.length > 0) {
-          roadmapText += `⚠️  CHALLENGES:\n`;
-          month.challenges.forEach(challenge => {
-            roadmapText += `   • ${challenge}\n`;
-          });
-          roadmapText += `\n`;
-        }
+        roadmapText += `Revenue: $${month.revenue}\n`;
+        roadmapText += `Users: ${month.users}\n`;
+        roadmapText += `Challenge: ${month.challenge}\n`;
+        roadmapText += `Wins: ${month.wins?.join(', ')}\n`;
+        roadmapText += `Key Decisions: ${month.keyDecisions?.join(', ')}\n`;
         
         if (index < simulationData.length - 1) {
-          roadmapText += `${'-'.repeat(50)}\n\n`;
+          roadmapText += `\n---\n\n`;
         }
       });
-      
-      roadmapText += `\n\nGenerated by ValidatorAI Platform\n`;
-      roadmapText += `For startup idea validation and simulation\n`;
 
-      const filename = `${validationData.idea.replace(/[^a-zA-Z0-9]/g, '_')}_6Month_Roadmap.txt`;
+      roadmapText += `\nGenerated by ValidatorAI\n`;
+      roadmapText += `For startup idea validation and simulation\n`;
+      roadmapText += `Date: ${new Date().toLocaleDateString()}\n`;
 
       res.setHeader('Content-Type', 'text/plain');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      
+      res.setHeader('Content-Disposition', 'attachment; filename="startup-simulation-roadmap.txt"');
       res.send(roadmapText);
     } catch (error) {
       console.error("Simulation roadmap error:", error);
       res.status(500).json({ message: "Failed to generate simulation roadmap" });
+    }
+  });
+
+  // Create or update simulation session
+  app.post("/api/simulation-session", async (req, res) => {
+    try {
+      const { userId, validationId, idea, targetCustomer, problemSolved, customerPersonas, conversationHistory, simulationData } = req.body;
+      
+      if (!idea || !targetCustomer || !problemSolved) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Import supabase client
+      const { supabase } = await import('./supabase');
+
+      // Check if session already exists for this user and validation
+      const { data: existingSession } = await supabase
+        .from('simulation_sessions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('idea', idea)
+        .single();
+
+      if (existingSession) {
+        // Update existing session
+        const { data: updatedSession, error } = await supabase
+          .from('simulation_sessions')
+          .update({
+            customer_personas: customerPersonas ? JSON.stringify(customerPersonas) : null,
+            conversation_history: conversationHistory ? JSON.stringify(conversationHistory) : null,
+            simulation_data: simulationData ? JSON.stringify(simulationData) : null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingSession.id)
+          .select()
+          .single();
+
+        if (error) throw new Error(`Failed to update simulation session: ${error.message}`);
+        res.json({ session: updatedSession });
+      } else {
+        // Create new session
+        const { data: newSession, error } = await supabase
+          .from('simulation_sessions')
+          .insert({
+            user_id: userId,
+            validation_id: validationId,
+            idea,
+            target_customer: targetCustomer,
+            problem_solved: problemSolved,
+            customer_personas: customerPersonas ? JSON.stringify(customerPersonas) : null,
+            conversation_history: conversationHistory ? JSON.stringify(conversationHistory) : null,
+            simulation_data: simulationData ? JSON.stringify(simulationData) : null
+          })
+          .select()
+          .single();
+
+        if (error) throw new Error(`Failed to create simulation session: ${error.message}`);
+        res.json({ session: newSession });
+      }
+    } catch (error) {
+      console.error("Simulation session error:", error);
+      res.status(500).json({ message: "Failed to save simulation session" });
+    }
+  });
+
+  // Get simulation sessions for admin (paginated)
+  app.get("/api/admin/simulation-sessions", async (req, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 10;
+      const offsetValue = (page - 1) * pageSize;
+
+      // Import supabase client
+      const { supabase } = await import('./supabase');
+
+      // Get total count
+      const { count: totalCount, error: countError } = await supabase
+        .from('simulation_sessions')
+        .select('*', { count: 'exact', head: true });
+
+      if (countError) throw new Error(`Failed to get count: ${countError.message}`);
+
+      // Get paginated sessions with user and validation data
+      const { data: sessions, error: fetchError } = await supabase
+        .from('simulation_sessions')
+        .select(`
+          *,
+          user:users(id, name, email),
+          validation:validations(id, feedback)
+        `)
+        .order('created_at', { ascending: false })
+        .range(offsetValue, offsetValue + pageSize - 1);
+
+      if (fetchError) throw new Error(`Failed to fetch sessions: ${fetchError.message}`);
+
+      res.json({
+        sessions: (sessions || []).map(session => ({
+          id: session.id,
+          idea: session.idea,
+          targetCustomer: session.target_customer,
+          problemSolved: session.problem_solved,
+          customerPersonas: session.customer_personas ? JSON.parse(session.customer_personas) : null,
+          conversationHistory: session.conversation_history ? JSON.parse(session.conversation_history) : null,
+          simulationData: session.simulation_data ? JSON.parse(session.simulation_data) : null,
+          createdAt: session.created_at,
+          updatedAt: session.updated_at,
+          user: session.user,
+          validation: session.validation
+        })),
+        pagination: {
+          page,
+          pageSize,
+          total: totalCount || 0,
+          totalPages: Math.ceil((totalCount || 0) / pageSize)
+        }
+      });
+    } catch (error) {
+      console.error("Get simulation sessions error:", error);
+      res.status(500).json({ message: "Failed to fetch simulation sessions" });
     }
   });
 

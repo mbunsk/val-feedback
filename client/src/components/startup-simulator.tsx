@@ -7,7 +7,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { MessageCircle, TrendingUp, Download, CheckCircle, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  MessageCircle, 
+  Users, 
+  TrendingUp, 
+  Calendar, 
+  DollarSign, 
+  Target,
+  Lightbulb,
+  CheckCircle,
+  ArrowRight,
+  Play,
+  Send,
+  X,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle
+} from "lucide-react";
 
 interface StartupSimulatorProps {
   validationData?: {
@@ -61,6 +78,7 @@ export default function StartupSimulator({ validationData }: StartupSimulatorPro
   const [valQuestion, setValQuestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Reset phase when validationData changes
   useEffect(() => {
@@ -237,6 +255,25 @@ export default function StartupSimulator({ validationData }: StartupSimulatorPro
       const simulation = Array.isArray(data.simulation) ? data.simulation : (data.simulation?.phases || data.phases || []);
       setSimulationData(simulation);
       setCurrentPhase('simulation');
+
+      // Save simulation session to database
+      if (user && validationData) {
+        try {
+          await apiRequest("POST", "/api/simulation-session", {
+            userId: user.id,
+            validationId: null, // validationData doesn't have an id
+            idea: validationData.idea,
+            targetCustomer: validationData.targetCustomer,
+            problemSolved: validationData.problemSolved,
+            customerPersonas: customers,
+            conversationHistory: messages,
+            simulationData: simulation
+          });
+        } catch (error) {
+          console.error("Failed to save simulation session:", error);
+          // Don't show error to user as this is not critical
+        }
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -255,7 +292,7 @@ export default function StartupSimulator({ validationData }: StartupSimulatorPro
     try {
       const apiResponse = await apiRequest("POST", "/api/challenge-feedback", {
         month,
-        challenge: simulationData[month - 1]?.challenge || simulationData[month - 1]?.challenges?.[0],
+        challenge: simulationData[month - 1]?.challenges?.[0] || '',
         response,
         validationData,
         simulationData: simulationData[month - 1]
@@ -359,44 +396,30 @@ export default function StartupSimulator({ validationData }: StartupSimulatorPro
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate report');
+        throw new Error('Failed to generate simulation roadmap');
       }
 
-      // Handle text downloads for both reports
-      if (reportType === 'pitch') {
-        // Handle text pitch deck download
-        const textContent = await response.text();
-        const blob = new Blob([textContent], { type: 'text/plain' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${validationData?.idea.replace(/[^a-zA-Z0-9]/g, '_')}_PitchDeck.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      } else {
-        // Handle PDF download for business report
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${validationData?.idea.replace(/[^a-zA-Z0-9]/g, '_')}_BusinessReport.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }
+      // Handle text download for simulation roadmap
+      const textContent = await response.text();
+      const blob = new Blob([textContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${validationData?.idea.replace(/[^a-zA-Z0-9]/g, '_')}_SimulationRoadmap.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
       
       toast({
         title: "Download Started!",
-        description: reportType === 'pitch' ? "Pitch deck downloaded" : "Business report downloaded"
+        description: "Simulation roadmap downloaded"
       });
       
     } catch (error) {
       toast({
         title: "Error", 
-        description: "Failed to generate report",
+        description: "Failed to generate simulation roadmap",
         variant: "destructive"
       });
     } finally {
@@ -660,7 +683,7 @@ export default function StartupSimulator({ validationData }: StartupSimulatorPro
                     </div>
 
                     {/* Interactive Challenge Section */}
-                    {phase.challenge && (
+                    {phase.challenges && phase.challenges.length > 0 && (
                       <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
                         <div className="flex items-center mb-4">
                           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500 mr-4">
@@ -677,7 +700,7 @@ export default function StartupSimulator({ validationData }: StartupSimulatorPro
                         </div>
                         
                         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-blue-300 dark:border-blue-700 mb-4">
-                          <p className="font-medium text-gray-800 dark:text-gray-200">{phase.challenge}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-200">{phase.challenges?.[0]}</p>
                         </div>
 
                         <div className="space-y-4">
