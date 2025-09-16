@@ -194,7 +194,7 @@ export default function AdminPage() {
   };
 
   // Process stats into company groups
-  const companyStats: CompanyStats[] = ["bubble", "beehiiv", "liveplan", "gamma", "miro", "notion", "augment"].map(company => {
+  const companyStats: CompanyStats[] = ["base44",  "liveplan"].map(company => {
     const logoStat = stats.find(s => s.company === company && s.linkType === "logo");
     const buttonStat = stats.find(s => s.company === company && s.linkType === "button");
     

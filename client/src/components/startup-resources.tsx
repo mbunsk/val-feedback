@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 
+
 // Track link clicks
 const trackClick = async (company: string, linkType: string, url: string) => {
   try {
@@ -23,6 +24,8 @@ import gammaLogo from "@assets/gamma_1755201488532.png";
 import miroLogo from "@assets/mirologo_1755201488533.png";
 import notionLogo from "@assets/notionlogopng_1755201488534.png";
 import augmentLogo from "@assets/augmentbestlogo_1755203840573.png";
+import Base44Icon from "@assets/base44png_1754234608565.png"
+import base44Logo from "@assets/base44logo.png"
 
 interface StartupResourcesProps {
   validationData?: {
@@ -55,58 +58,22 @@ export default function StartupResources({ validationData }: StartupResourcesPro
               Ready to Keep Exploring?
             </h2>
             <p className="text-xl text-foreground/70 mb-8">
-              After validating your idea, you'll get access to personalized startup and idea validation resources.
+              It’s smart to mock up what your idea might look like.  We recommend Base44, below.  You can sign up for FREE and get your idea built with AI in a matter of seconds!  👇
+
               <br />
-              <span className="text-primary font-semibold">Choose from 7 trusted partner tools to continue your exploration journey! ✨</span>
+              
             </p>
           </div>
 
-          {/* Preview Grid */}
-          <div className="text-center">
-            <Card className="max-w-4xl mx-auto border-2 border-dashed border-muted-foreground/30 bg-muted/20">
-              <CardContent className="p-12">
-                <div className="text-6xl mb-6">🔒</div>
-                <h3 className="text-2xl font-bold mb-4 text-muted-foreground">
-                  Your Startup Resources Kit
-                </h3>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Complete Step 1 (idea validation) to unlock your personalized toolkit including:
-                </p>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 text-center max-w-2xl mx-auto">
-                  <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-700">
-                    <div className="font-semibold text-purple-700 dark:text-purple-300">🌐 Website Builder</div>
-                    <div className="text-sm text-purple-600 dark:text-purple-400">Create landing pages</div>
-                  </div>
-                  <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-700">
-                    <div className="font-semibold text-yellow-700 dark:text-yellow-300">📧 Audience Building</div>
-                    <div className="text-sm text-yellow-600 dark:text-yellow-400">Build your community</div>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-700">
-                    <div className="font-semibold text-blue-700 dark:text-blue-300">📋 Business Planning</div>
-                    <div className="text-sm text-blue-600 dark:text-blue-400">Create business plans</div>
-                  </div>
-                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-700">
-                    <div className="font-semibold text-green-700 dark:text-green-300">🎨 Presentations</div>
-                    <div className="text-sm text-green-600 dark:text-green-400">Build pitch decks</div>
-                  </div>
-                  <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-700">
-                    <div className="font-semibold text-orange-700 dark:text-orange-300">🤝 Collaboration</div>
-                    <div className="text-sm text-orange-600 dark:text-orange-400">Whiteboard ideas</div>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-900/20 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <div className="font-semibold text-gray-700 dark:text-gray-300">📊 Organization</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Manage research</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4 mt-4 max-w-2xl mx-auto">
-                  <div className="col-start-2 bg-lime-50 dark:bg-lime-900/20 p-3 rounded-lg border border-lime-200 dark:border-lime-700">
-                    <div className="font-semibold text-lime-700 dark:text-lime-300">🎓 Education</div>
-                    <div className="text-sm text-lime-600 dark:text-lime-400">Entrepreneur MBA</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="flex justify-center">
+          <a className="flex justify-center items-center space-x-3 hover:opacity-80 border-2 border-primary/20 bg-card/80 backdrop-blur-sm  w-80 h-30  shadow-lg rounded-full px-4 py-2  transform  animate-float hover:scale-125 transition-transform duration-300 mt-10 p-10" href="https://base44.pxf.io/c/4695538/2049275/25619?trafcat=base">
+            
+            <span className="text-white-800 text-2xl font-bold">Try Base44</span>
+            <img src={Base44Icon} className="w-30 h-20 rounded-full"/>
+            
+          </a>
+        </div>
+          
         </div>
       </section>
     );
@@ -114,72 +81,28 @@ export default function StartupResources({ validationData }: StartupResourcesPro
 
   const resources = [
     {
-      name: "Bubble",
+      name: "Base44",
       title: "Mock Up Your Website",
       description: "Create a professional landing page mockup in minutes. No coding required - perfect for validating your idea with real visitors.",
-      url: "https://bubble.pxf.io/e1kn1O",
-      logo: bubbleLogo,
+      url: "https://base44.pxf.io/c/4695538/2049275/25619?trafcat=base",
+      logo: base44Logo,
       color: "bg-purple-600 hover:bg-purple-700",
       category: "Website Builder"
-    },
-    {
-      name: "Beehiiv",
-      title: "Build Your Audience",
-      description: "The best way to validate is to build an audience! Create newsletters and grow your subscriber base to validate demand before you build.",
-      url: "https://www.beehiiv.com/?via=aron-meystedt&_bhlid=bfc4afcba0acc7ca8c69966bb231bf46b6adfee0",
-      logo: beehiivLogo,
-      color: "bg-yellow-600 hover:bg-yellow-700",
-      category: "Audience Building"
     },
     {
       name: "LivePlan",
       title: "Create a Full Business Plan",
       description: "Transform your validated idea into a comprehensive business plan with financial projections and investor-ready documents.",
-      url: "https://liveplan.com",
+      url: "https://pas.go2cloud.org/aff_c?offer_id=2&aff_id=9860&url_id=119 ",
       logo: liveplanLogo,
       color: "bg-blue-600 hover:bg-blue-700",
       category: "Business Planning"
     },
-    {
-      name: "Gamma",
-      title: "Create Pitch Deck",
-      description: "Build beautiful pitch decks powered by AI. Turn your idea validation into compelling presentation slides in minutes.",
-      url: "https://try.gamma.app/9mp9k1gqybqf",
-      logo: gammaLogo,
-      color: "bg-green-600 hover:bg-green-700",
-      category: "Presentations"
-    },
-    {
-      name: "Miro",
-      title: "Whiteboard Your Idea",
-      description: "Visualize and map out your startup concept with collaborative whiteboarding. Perfect for brainstorming and team planning.",
-      url: "https://miro.com",
-      logo: miroLogo,
-      color: "bg-orange-600 hover:bg-orange-700",
-      category: "Collaboration"
-    },
-    {
-      name: "Notion",
-      title: "Organize & Analyze",
-      description: "Keep all your startup research, customer feedback, and business insights organized in one powerful workspace.",
-      url: "https://notion.so",
-      logo: notionLogo,
-      color: "bg-gray-600 hover:bg-gray-700",
-      category: "Organization"
-    },
-    {
-      name: "Augment",
-      title: "Learn from Top Entrepreneurs",
-      description: "An MBA for entrepreneurs, by entrepreneurs: entirely practical, taught by the world's greatest entrepreneurs, on your terms, and costing less than 1% of a traditional MBA. Validator AI members get 30% off!",
-      url: "https://agmntbiz.link/validatorai",
-      logo: augmentLogo,
-      color: "bg-lime-600 hover:bg-lime-700",
-      category: "Education"
-    }
+    
   ];
 
   return (
-    <section id="resources" className="resouces-result py-20 bg-gradient-to-br from-accent/10 via-background to-primary/10 relative">
+    <section id="resources" className="resouces-result py-20 bg-gradient-to-br from-accent/10 via-background to-primary/10 relative ">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-20 text-5xl opacity-20 animate-float">🚀</div>
         <div className="absolute bottom-20 right-20 text-4xl opacity-20 animate-bounce-gentle">💼</div>
@@ -275,8 +198,6 @@ export default function StartupResources({ validationData }: StartupResourcesPro
             </Card>
           ))}
         </div>
-
-
       </div>
     </section>
   );

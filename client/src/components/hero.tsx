@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import React, { useEffect, useState } from 'react';
 
+
 export default function Hero() {
 
   const [subscriberCount, setSubscriberCount] = useState(null);
@@ -64,8 +65,9 @@ export default function Hero() {
                 <div className="relative">
                   <div className="bg-white rounded-xl p-3 shadow-lg border border-white/20 max-w-xs">
                   <div className="text-xs text-gray-700 leading-tight">
-                      <span className="font-semibold text-primary">Val provides:</span> Market insights, 
-                      customer conversation simulations, revenue ideas and key next steps!
+                      <span className="font-semibold text-primary">Val provides:</span> Market insights,
+                       target customer reactions, revenue ideas and key next steps!
+
                     </div>
                     
                     {/* Bubble tail */}
@@ -126,7 +128,7 @@ export default function Hero() {
             <span className="text-foreground">With AI Feedback! 🚀</span>
           </h1>
           <p className="text-xl sm:text-2xl text-foreground/70 mb-8 max-w-4xl mx-auto leading-relaxed">
-            Get instant <strong className="text-white dark:text-white">AI validation</strong>, <strong className="text-white dark:text-white">startup resources</strong>, chat with <strong className="text-white dark:text-white">AI-customer personas</strong> and complete a <strong className="text-white dark:text-white">6 challenge launch simulation</strong>. <strong className="text-white dark:text-white">ALL FREE!</strong>
+            Get instant <strong className="text-white dark:text-white">AI validation</strong>, <strong className="text-white dark:text-white">market insights</strong>, <strong className="text-white dark:text-white">customer feedback</strong> and <strong className="text-white dark:text-white">key next steps</strong>. It's all <strong className="text-white dark:text-white">fast </strong> and <strong className="text-white dark:text-white">FREE! </strong>
           </p>
           <Button style={{display: 'none'}}
             onClick={scrollToValidation}
