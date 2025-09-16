@@ -66,7 +66,7 @@ export default function StartupResources({ validationData }: StartupResourcesPro
           </div>
 
         <div className="flex justify-center">
-          <a className="flex justify-center items-center space-x-3 hover:opacity-80 border-2 border-primary/20 bg-card/80 backdrop-blur-sm  w-80 h-30  shadow-lg rounded-full px-4 py-2  transform  animate-float hover:scale-125 transition-transform duration-300 mt-10 p-10" href="https://base44.pxf.io/c/4695538/2049275/25619?trafcat=base">
+          <a className="flex justify-center items-center space-x-3 hover:opacity-80 border-2 border-primary/20 bg-card/80 backdrop-blur-sm  w-80 h-30  shadow-lg rounded-full px-4 py-2  transform  animate-float hover:scale-125 transition-transform duration-300 mt-10 p-10"  target="_blank" href="https://base44.pxf.io/c/4695538/2049275/25619?trafcat=base">
             
             <span className="text-white-800 text-2xl font-bold">Try Base44</span>
             <img src={Base44Icon} className="w-30 h-20 rounded-full"/>
