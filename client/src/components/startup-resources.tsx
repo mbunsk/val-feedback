@@ -80,7 +80,7 @@ export default function StartupResources({ validationData }: StartupResourcesPro
               Ready to Keep Exploring?
             </h2>
             <p className="text-xl text-foreground/70 mb-8">
-              It’s smart to mock up what your idea might look like.  We recommend Base44, below.  You can sign up for FREE and get your idea built with AI in a matter of seconds!  👇
+              Validate your idea by building a landing page for FREE with AI! And, keep moving forward with an AI-generated Business Plan. 👇
 
               <br />
               
