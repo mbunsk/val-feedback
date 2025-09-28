@@ -19,7 +19,7 @@ const trackClick = async (company: string, linkType: string, url: string) => {
 
 import bubbleLogo from "@assets/bubble-icon-logo-png_seeklogo-448116_1754234608565.png";
 import beehiivLogo from "@assets/beehiivlogopng_1755201488531.png";
-import liveplanLogo from "@assets/liveplanlogo_1755201488533.png";
+//import liveplanLogo from "@assets/liveplanlogo_1755201488533.png";
 import gammaLogo from "@assets/gamma_1755201488532.png";
 import miroLogo from "@assets/mirologo_1755201488533.png";
 import notionLogo from "@assets/notionlogopng_1755201488534.png";
@@ -46,15 +46,15 @@ const resources = [
       color: "bg-purple-600 hover:bg-purple-700",
       category: "Website Builder"
     },
-    {
-      name: "LivePlan",
-      title: "Create a Full Business Plan",
-      description: "Transform your validated idea into a comprehensive business plan with financial projections and investor-ready documents.",
-      url: "https://pas.go2cloud.org/aff_c?offer_id=2&aff_id=9860&url_id=119 ",
-      logo: liveplanLogo,
-      color: "bg-blue-600 hover:bg-blue-700",
-      category: "Business Planning"
-    },
+    // {
+    //   name: "LivePlan",
+    //   title: "Create a Full Business Plan",
+    //   description: "Transform your validated idea into a comprehensive business plan with financial projections and investor-ready documents.",
+    //   url: "https://pas.go2cloud.org/aff_c?offer_id=2&aff_id=9860&url_id=119 ",
+    //   logo: liveplanLogo,
+    //   color: "bg-blue-600 hover:bg-blue-700",
+    //   category: "Business Planning"
+    // },
     
   ];
 
