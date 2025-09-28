@@ -17,14 +17,6 @@ const trackClick = async (company: string, linkType: string, url: string) => {
   }
 };
 
-import bubbleLogo from "@assets/bubble-icon-logo-png_seeklogo-448116_1754234608565.png";
-import beehiivLogo from "@assets/beehiivlogopng_1755201488531.png";
-//import liveplanLogo from "@assets/liveplanlogo_1755201488533.png";
-import gammaLogo from "@assets/gamma_1755201488532.png";
-import miroLogo from "@assets/mirologo_1755201488533.png";
-import notionLogo from "@assets/notionlogopng_1755201488534.png";
-import augmentLogo from "@assets/augmentbestlogo_1755203840573.png";
-import Base44Icon from "@assets/base44png_1754234608565.png"
 import base44Logo from "@assets/base44logo.png"
 
 interface StartupResourcesProps {
@@ -71,7 +63,7 @@ export default function StartupResources({ validationData }: StartupResourcesPro
               Ready to Keep Exploring?
             </h2>
             <p className="text-xl text-foreground/70 mb-8">
-              Validate your idea by building a landing page for FREE with AI! And, keep moving forward with an AI-generated Business Plan. 👇
+              Validate your idea by building a landing page for FREE with AI! 👇
 
               <br />
               
